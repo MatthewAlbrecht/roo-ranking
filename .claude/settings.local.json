@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:docs.convex.dev)",
+      "Bash(pnpm dlx shadcn@latest create:*)",
+      "Bash(pnpm install:*)",
+      "Bash(corepack disable:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm dlx shadcn@latest add:*)",
+      "Bash(node --version:*)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm use:*)",
+      "Bash(pnpm convex deploy:*)",
+      "Bash(pnpm exec convex deploy:*)",
+      "Bash(pnpm exec convex run:*)"
+    ]
+  }
+}
