@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 type Artist = {
@@ -28,6 +29,7 @@ export default function ArtistsPage() {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "bali" | "my">("all");
+  const [search, setSearch] = useState("");
 
   const activeYear = useQuery(api.settings.getActiveYear);
   const artists = useQuery(
@@ -48,8 +50,12 @@ export default function ArtistsPage() {
   );
   const allUsers = useQuery(api.users.getAllUsers);
 
-  const sortedArtists = artists?.slice().sort((a, b) => a.name.localeCompare(b.name));
   const userMap = new Map(allUsers?.map((u) => [u._id.toString(), u]) ?? []);
+
+  // Filter artists for "All" tab
+  const filteredArtists = artists
+    ?.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
   const isLoading = activeYear === undefined || artists === undefined || rankings === undefined;
   const ratedCount = rankings ? Object.keys(rankings).length : 0;
 
@@ -84,13 +90,31 @@ export default function ArtistsPage() {
     <ProtectedRoute>
       <Layout>
         <div className="flex flex-col h-[calc(100vh-8rem)]">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-semibold">Artists</h1>
-              {!isLoading && (
-                <p className="text-sm text-muted-foreground">
-                  {activeYear} - {ratedCount}/{artists?.length ?? 0} rated
-                </p>
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold">Artists</h1>
+                {!isLoading && (
+                  <p className="text-sm text-muted-foreground">
+                    {activeYear} - {ratedCount}/{artists?.length ?? 0} rated
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="relative mt-3">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search artists..."
+                className="pr-8"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
               )}
             </div>
           </div>
@@ -109,14 +133,16 @@ export default function ArtistsPage() {
                     <Skeleton key={i} className="h-14 w-full" />
                   ))}
                 </div>
-              ) : sortedArtists?.length === 0 ? (
+              ) : filteredArtists?.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">No artists for {activeYear}</p>
+                  <p className="text-muted-foreground">
+                    {search ? `No artists match "${search}"` : `No artists for ${activeYear}`}
+                  </p>
                 </div>
               ) : (
-                <ScrollArea className="h-[calc(100vh-14rem)] -mx-4">
+                <ScrollArea className="h-[calc(100vh-17rem)] -mx-4">
                   <div className="px-4">
-                    {sortedArtists?.map((artist) => {
+                    {filteredArtists?.map((artist) => {
                       const score = rankings?.[artist._id] ?? null;
                       const others = otherRankings?.[artist._id] ?? [];
                       return (
@@ -162,7 +188,7 @@ export default function ArtistsPage() {
                   ))}
                 </div>
               ) : (
-                <ScrollArea className="h-[calc(100vh-14rem)] -mx-4">
+                <ScrollArea className="h-[calc(100vh-17rem)] -mx-4">
                   <div className="px-4">
                     {/* Ranked Artists */}
                     {myRankedArtists.map((artist, index) => (
