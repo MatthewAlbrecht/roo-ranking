@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { api } from "../../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StepCredentials } from "./StepCredentials";
@@ -25,7 +25,7 @@ const STEP_TITLES: Record<Step, string> = {
 
 export function OnboardingWizard() {
   const router = useRouter();
-  const { signIn } = useAuthActions();
+  const { login } = useAuth();
   const register = useMutation(api.users.register);
 
   const [currentStep, setCurrentStep] = useState<Step>("credentials");
@@ -71,13 +71,13 @@ export function OnboardingWizard() {
       });
 
       if (result.success) {
-        // Sign in with Convex Auth (use email field for username)
-        try {
-          await signIn("password", { email: username, password, flow: "signIn" });
+        // Log in with the new credentials
+        const loginResult = await login(username, password);
+        if (loginResult.success) {
           toast.success("Welcome to Roo Ranking!");
           router.push("/artists");
-        } catch {
-          // Registration worked but Convex Auth sign-in failed - redirect to login
+        } else {
+          // Registration worked but login failed - redirect to login page
           toast.success("Account created! Please log in.");
           router.push("/");
         }

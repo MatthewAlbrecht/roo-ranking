@@ -4,6 +4,7 @@ import { useEffect, useCallback } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { useAuth } from "@/components/AuthProvider";
 import {
   Drawer,
   DrawerContent,
@@ -35,24 +36,23 @@ export function RankingDrawer({
   open,
   onOpenChange,
 }: RankingDrawerProps) {
+  const { token } = useAuth();
   const setRanking = useMutation(api.rankings.setRanking);
   const clearRanking = useMutation(api.rankings.clearRanking);
 
   const handleRate = useCallback(
     async (score: number) => {
-      if (!artist) return;
-      // userId is now verified server-side via Convex Auth
-      await setRanking({ artistId: artist._id, score });
+      if (!artist || !token) return;
+      await setRanking({ token, artistId: artist._id, score });
       toast.success(`Rated ${artist.name}: ${score}/10`);
       onOpenChange(false);
     },
-    [artist, setRanking, onOpenChange]
+    [artist, token, setRanking, onOpenChange]
   );
 
   const handleClear = async () => {
-    if (!artist) return;
-    // userId is now verified server-side via Convex Auth
-    await clearRanking({ artistId: artist._id });
+    if (!artist || !token) return;
+    await clearRanking({ token, artistId: artist._id });
     toast.success(`Cleared rating for ${artist.name}`);
     onOpenChange(false);
   };

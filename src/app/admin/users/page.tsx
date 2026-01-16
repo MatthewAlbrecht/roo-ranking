@@ -39,7 +39,7 @@ const AVATAR_COLORS = [
 ];
 
 export default function AdminUsersPage() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, token } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS[0]);
@@ -79,13 +79,14 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (userId: Id<"users">) => {
-    await deleteUser({ userId });
+    if (!token) return;
+    await deleteUser({ token, userId });
   };
 
   const handleResetPassword = async () => {
-    if (!resetPasswordUserId || !newPassword.trim()) return;
+    if (!resetPasswordUserId || !newPassword.trim() || !token) return;
     setIsResetting(true);
-    await resetPassword({ userId: resetPasswordUserId, newPassword: newPassword.trim() });
+    await resetPassword({ token, userId: resetPasswordUserId, newPassword: newPassword.trim() });
     setResetPasswordUserId(null);
     setNewPassword("");
     setIsResetting(false);
@@ -185,7 +186,7 @@ export default function AdminUsersPage() {
                             <button
                               key={color}
                               type="button"
-                              onClick={() => updateUserColor({ userId: user._id, avatarColor: color })}
+                              onClick={() => token && updateUserColor({ token, userId: user._id, avatarColor: color })}
                               className={`w-8 h-8 rounded-full transition-all ${color} ${
                                 user.avatarColor === color
                                   ? "ring-2 ring-offset-2 ring-foreground"

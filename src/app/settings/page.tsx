@@ -32,7 +32,7 @@ interface QuestionnaireData {
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const updateProfile = useMutation(api.users.updateProfile);
   const changePassword = useMutation(api.users.changePassword);
 
@@ -67,10 +67,9 @@ export default function SettingsPage() {
   }, [user]);
 
   const handleSaveColor = async () => {
-    if (!user) return;
+    if (!user || !token) return;
     setColorSaving(true);
-    // userId is now verified server-side via Convex Auth
-    const result = await updateProfile({ avatarColor });
+    const result = await updateProfile({ token, avatarColor });
     if (result.success) {
       toast.success("Avatar color updated");
     } else {
@@ -80,10 +79,10 @@ export default function SettingsPage() {
   };
 
   const handleSaveYears = async () => {
-    if (!user) return;
+    if (!user || !token) return;
     setYearsSaving(true);
-    // userId is now verified server-side via Convex Auth
     const result = await updateProfile({
+      token,
       yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
     });
     if (result.success) {
@@ -95,11 +94,11 @@ export default function SettingsPage() {
   };
 
   const handleSaveQuestionnaire = async () => {
-    if (!user) return;
+    if (!user || !token) return;
     setQuestionnaireSaving(true);
     const hasData = Object.values(questionnaire).some((v) => v?.trim());
-    // userId is now verified server-side via Convex Auth
     const result = await updateProfile({
+      token,
       questionnaire: hasData ? questionnaire : undefined,
     });
     if (result.success) {
@@ -111,7 +110,7 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = async () => {
-    if (!user) return;
+    if (!user || !token) return;
     setPasswordError("");
 
     if (newPassword.length < 6) {
@@ -124,8 +123,8 @@ export default function SettingsPage() {
     }
 
     setPasswordSaving(true);
-    // userId is now verified server-side via Convex Auth
     const result = await changePassword({
+      token,
       currentPassword,
       newPassword,
     });

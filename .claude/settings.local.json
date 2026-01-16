@@ -19,7 +19,10 @@
       "Bash(npx next build)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx convex:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pnpm remove:*)"
     ]
   }
 }

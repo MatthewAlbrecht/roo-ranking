@@ -24,7 +24,7 @@ const STEP_TITLES: Record<Step, string> = {
 
 export default function CompleteOnboardingPage() {
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, token } = useAuth();
   const completeOnboarding = useMutation(api.users.completeOnboarding);
 
   const [currentStep, setCurrentStep] = useState<Step>("avatar");
@@ -75,12 +75,12 @@ export default function CompleteOnboardingPage() {
   };
 
   const handleFinish = async (includeQuestionnaire: boolean) => {
-    if (!user) return;
+    if (!user || !token) return;
     setIsSubmitting(true);
 
     try {
-      // userId is now verified server-side via Convex Auth
       const result = await completeOnboarding({
+        token,
         avatarColor,
         yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
         questionnaire: includeQuestionnaire && Object.values(questionnaire).some(v => v?.trim())

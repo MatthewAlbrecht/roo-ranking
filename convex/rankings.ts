@@ -1,17 +1,18 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth } from "./lib/auth";
+import { requireSession } from "./lib/auth";
 
 // Set or update a ranking (upsert)
-// User identity is verified server-side via Convex Auth
+// Session token is verified server-side
 export const setRanking = mutation({
   args: {
+    token: v.string(),
     artistId: v.id("artists"),
     score: v.number(),
   },
   handler: async (ctx, args) => {
-    // Get authenticated user ID from session (throws if not authenticated)
-    const userId = await requireAuth(ctx);
+    // Verify session and get user ID
+    const userId = await requireSession(ctx, args.token);
 
     if (args.score < 1 || args.score > 10) {
       return { success: false, error: "Score must be between 1 and 10" };
@@ -42,14 +43,15 @@ export const setRanking = mutation({
 });
 
 // Clear a ranking
-// User identity is verified server-side via Convex Auth
+// Session token is verified server-side
 export const clearRanking = mutation({
   args: {
+    token: v.string(),
     artistId: v.id("artists"),
   },
   handler: async (ctx, args) => {
-    // Get authenticated user ID from session (throws if not authenticated)
-    const userId = await requireAuth(ctx);
+    // Verify session and get user ID
+    const userId = await requireSession(ctx, args.token);
 
     const existing = await ctx.db
       .query("rankings")

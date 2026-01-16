@@ -9,7 +9,9 @@
  */
 
 import type * as artists from "../artists.js";
+import type * as auth from "../auth.js";
 import type * as groups from "../groups.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as rankings from "../rankings.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
@@ -23,7 +25,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   artists: typeof artists;
+  auth: typeof auth;
   groups: typeof groups;
+  "lib/auth": typeof lib_auth;
   rankings: typeof rankings;
   seed: typeof seed;
   settings: typeof settings;

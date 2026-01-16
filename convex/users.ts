@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import bcrypt from "bcryptjs";
-import { requireAuth, requireAdmin, getAuthenticatedUserId } from "./lib/auth";
+import { requireSession, requireAdmin, validateSessionToken } from "./lib/auth";
 
 const SALT_ROUNDS = 10;
 
@@ -13,33 +13,7 @@ const questionnaireValidator = v.object({
   campEssential: v.optional(v.string()),
 });
 
-// Login - returns user if credentials match, null otherwise
-export const login = mutation({
-  args: { username: v.string(), password: v.string() },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_username", (q) => q.eq("username", args.username))
-      .unique();
-
-    if (!user) {
-      return null;
-    }
-
-    // Compare password with bcrypt
-    const isValid = await bcrypt.compare(args.password, user.password);
-    if (!isValid) {
-      return null;
-    }
-
-    return {
-      _id: user._id,
-      username: user.username,
-      isAdmin: user.isAdmin,
-      avatarColor: user.avatarColor,
-    };
-  },
-});
+// Login is now in convex/auth.ts
 
 // Get user by ID (for session restoration) - legacy, use getCurrentUser instead
 export const getUser = query({
@@ -59,11 +33,11 @@ export const getUser = query({
   },
 });
 
-// Get current authenticated user (uses Convex Auth)
+// Get current authenticated user (uses session token)
 export const getCurrentUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthenticatedUserId(ctx);
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await validateSessionToken(ctx, args.token);
     if (!userId) return null;
 
     const user = await ctx.db.get(userId);
@@ -231,12 +205,13 @@ export const checkUsername = query({
 // Update user profile (authenticated user only)
 export const updateProfile = mutation({
   args: {
+    token: v.string(),
     avatarColor: v.optional(v.string()),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
-  handler: async (ctx, args) => {
-    const userId = await requireAuth(ctx);
+  handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
+    const userId = await requireSession(ctx, args.token);
 
     const updates: Record<string, unknown> = {};
     if (args.avatarColor !== undefined) updates.avatarColor = args.avatarColor;
@@ -251,12 +226,13 @@ export const updateProfile = mutation({
 // Complete onboarding for existing users (authenticated user only)
 export const completeOnboarding = mutation({
   args: {
+    token: v.string(),
     avatarColor: v.string(),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
-  handler: async (ctx, args) => {
-    const userId = await requireAuth(ctx);
+  handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
+    const userId = await requireSession(ctx, args.token);
 
     await ctx.db.patch(userId, {
       avatarColor: args.avatarColor,
@@ -272,11 +248,12 @@ export const completeOnboarding = mutation({
 // Change password (authenticated user only)
 export const changePassword = mutation({
   args: {
+    token: v.string(),
     currentPassword: v.string(),
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireAuth(ctx);
+    const userId = await requireSession(ctx, args.token);
     const user = await ctx.db.get(userId);
     if (!user) {
       return { success: false, error: "User not found" };
@@ -304,12 +281,13 @@ export const changePassword = mutation({
 // Reset user password (admin only - verified server-side)
 export const resetPassword = mutation({
   args: {
+    token: v.string(),
     userId: v.id("users"),
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
     // Verify caller is an admin
-    await requireAdmin(ctx);
+    await requireAdmin(ctx, args.token);
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
@@ -327,12 +305,13 @@ export const resetPassword = mutation({
 // Update user avatar color (admin only - verified server-side)
 export const updateUserColor = mutation({
   args: {
+    token: v.string(),
     userId: v.id("users"),
     avatarColor: v.string(),
   },
   handler: async (ctx, args) => {
     // Verify caller is an admin
-    await requireAdmin(ctx);
+    await requireAdmin(ctx, args.token);
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
@@ -346,10 +325,10 @@ export const updateUserColor = mutation({
 
 // Delete user (admin only - verified server-side)
 export const deleteUser = mutation({
-  args: { userId: v.id("users") },
+  args: { token: v.string(), userId: v.id("users") },
   handler: async (ctx, args) => {
     // Verify caller is an admin
-    await requireAdmin(ctx);
+    await requireAdmin(ctx, args.token);
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
@@ -364,6 +343,16 @@ export const deleteUser = mutation({
 
     for (const ranking of rankings) {
       await ctx.db.delete(ranking._id);
+    }
+
+    // Delete all sessions for this user
+    const sessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    for (const session of sessions) {
+      await ctx.db.delete(session._id);
     }
 
     await ctx.db.delete(args.userId);

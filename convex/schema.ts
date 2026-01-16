@@ -1,9 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
-  ...authTables,
   users: defineTable({
     username: v.string(),
     password: v.string(),
@@ -22,6 +20,16 @@ export default defineSchema({
     ),
     onboardingComplete: v.optional(v.boolean()),
   }).index("by_username", ["username"]),
+
+  // Session tokens for secure authentication
+  sessions: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_user", ["userId"]),
 
   artists: defineTable({
     name: v.string(),

@@ -2,27 +2,35 @@ import { QueryCtx, MutationCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 
 /**
- * Get the authenticated user's ID from the auth context.
- * Returns null if not authenticated.
+ * Validate a session token and return the userId if valid.
+ * This should be called by mutations that need to verify the user.
  */
-export async function getAuthenticatedUserId(
-  ctx: QueryCtx | MutationCtx
+export async function validateSessionToken(
+  ctx: QueryCtx | MutationCtx,
+  token: string | null | undefined
 ): Promise<Id<"users"> | null> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) return null;
+  if (!token) return null;
 
-  // The subject is the user ID we returned from the Password verify function
-  return identity.subject as Id<"users">;
+  const session = await ctx.db
+    .query("sessions")
+    .withIndex("by_token", (q) => q.eq("token", token))
+    .unique();
+
+  if (!session) return null;
+  if (session.expiresAt < Date.now()) return null;
+
+  return session.userId;
 }
 
 /**
- * Require authentication - throws if not authenticated.
+ * Require a valid session - throws if invalid.
  * Returns the authenticated user's ID.
  */
-export async function requireAuth(
-  ctx: QueryCtx | MutationCtx
+export async function requireSession(
+  ctx: QueryCtx | MutationCtx,
+  token: string | null | undefined
 ): Promise<Id<"users">> {
-  const userId = await getAuthenticatedUserId(ctx);
+  const userId = await validateSessionToken(ctx, token);
   if (!userId) {
     throw new Error("Not authenticated");
   }
@@ -34,9 +42,10 @@ export async function requireAuth(
  * Returns the authenticated admin user's ID.
  */
 export async function requireAdmin(
-  ctx: QueryCtx | MutationCtx
+  ctx: QueryCtx | MutationCtx,
+  token: string | null | undefined
 ): Promise<Id<"users">> {
-  const userId = await requireAuth(ctx);
+  const userId = await requireSession(ctx, token);
   const user = await ctx.db.get(userId);
 
   if (!user?.isAdmin) {
