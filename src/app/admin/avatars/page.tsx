@@ -20,6 +20,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Id } from "../../../../convex/_generated/dataModel";
 
 function EditableName({
@@ -256,9 +258,13 @@ export default function AdminAvatarsPage() {
                   <AlertDialog>
                     <AlertDialogTrigger
                       render={
-                        <button className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-xl text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                          x
-                        </button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                        >
+                          <HugeiconsIcon icon={Cancel01Icon} size={14} />
+                        </Button>
                       }
                     />
                     <AlertDialogContent>
