@@ -22,7 +22,8 @@
       "Bash(git push:*)",
       "Bash(npx convex:*)",
       "WebFetch(domain:github.com)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "Bash(nvm list:*)"
     ]
   }
 }
