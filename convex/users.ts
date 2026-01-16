@@ -46,6 +46,7 @@ export const getUser = query({
       username: user.username,
       isAdmin: user.isAdmin,
       avatarColor: user.avatarColor,
+      avatarImageId: user.avatarImageId,
       yearsAttended: user.yearsAttended,
       questionnaire: user.questionnaire,
       onboardingComplete: user.onboardingComplete,
@@ -68,6 +69,7 @@ export const getCurrentUser = query({
       username: user.username,
       isAdmin: user.isAdmin,
       avatarColor: user.avatarColor,
+      avatarImageId: user.avatarImageId,
       yearsAttended: user.yearsAttended,
       questionnaire: user.questionnaire,
       onboardingComplete: user.onboardingComplete,
@@ -80,13 +82,20 @@ export const getAllUsers = query({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
-    return users.map((user) => ({
-      _id: user._id,
-      username: user.username,
-      isAdmin: user.isAdmin,
-      avatarColor: user.avatarColor,
-      createdAt: user.createdAt,
-    }));
+    const usersWithAvatars = await Promise.all(
+      users.map(async (user) => ({
+        _id: user._id,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        avatarColor: user.avatarColor,
+        avatarImageId: user.avatarImageId,
+        avatarImageUrl: user.avatarImageId
+          ? await ctx.storage.getUrl(user.avatarImageId)
+          : null,
+        createdAt: user.createdAt,
+      }))
+    );
+    return usersWithAvatars;
   },
 });
 
@@ -95,13 +104,20 @@ export const getAllUsersWithProfiles = query({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
-    return users.map((user) => ({
-      _id: user._id,
-      username: user.username,
-      avatarColor: user.avatarColor,
-      yearsAttended: user.yearsAttended,
-      questionnaire: user.questionnaire,
-    }));
+    const usersWithAvatars = await Promise.all(
+      users.map(async (user) => ({
+        _id: user._id,
+        username: user.username,
+        avatarColor: user.avatarColor,
+        avatarImageId: user.avatarImageId,
+        avatarImageUrl: user.avatarImageId
+          ? await ctx.storage.getUrl(user.avatarImageId)
+          : null,
+        yearsAttended: user.yearsAttended,
+        questionnaire: user.questionnaire,
+      }))
+    );
+    return usersWithAvatars;
   },
 });
 
@@ -120,6 +136,10 @@ export const getUserByUsername = query({
       _id: user._id,
       username: user.username,
       avatarColor: user.avatarColor,
+      avatarImageId: user.avatarImageId,
+      avatarImageUrl: user.avatarImageId
+        ? await ctx.storage.getUrl(user.avatarImageId)
+        : null,
       yearsAttended: user.yearsAttended,
       questionnaire: user.questionnaire,
     };
@@ -132,6 +152,7 @@ export const createUser = mutation({
     username: v.string(),
     password: v.string(),
     avatarColor: v.string(),
+    avatarImageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     // Check if username already exists
@@ -152,6 +173,7 @@ export const createUser = mutation({
       password: hashedPassword,
       isAdmin: false,
       avatarColor: args.avatarColor,
+      avatarImageId: args.avatarImageId,
       createdAt: Date.now(),
     });
 

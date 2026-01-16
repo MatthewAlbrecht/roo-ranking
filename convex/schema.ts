@@ -7,6 +7,7 @@ export default defineSchema({
     password: v.string(),
     isAdmin: v.boolean(),
     avatarColor: v.string(),
+    avatarImageId: v.optional(v.id("_storage")), // Optional avatar image
     createdAt: v.number(),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(
@@ -20,6 +21,13 @@ export default defineSchema({
     ),
     onboardingComplete: v.optional(v.boolean()),
   }).index("by_username", ["username"]),
+
+  // Avatar images that users can select from
+  avatars: defineTable({
+    storageId: v.id("_storage"),
+    name: v.string(),
+    createdAt: v.number(),
+  }),
 
   // Session tokens for secure authentication
   sessions: defineTable({

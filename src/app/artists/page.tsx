@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { RankingDrawer } from "@/components/RankingDrawer";
 import { BaliView } from "@/components/BaliView";
 import { OtherRankings } from "@/components/OtherRankings";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,6 +139,7 @@ export default function ArtistsPage() {
                 {displayUsers.map((u) => {
                   const isHexColor = u.avatarColor?.startsWith("#");
                   const bgColor = isHexColor ? u.avatarColor : undefined;
+                  const hasImage = !!u.avatarImageUrl;
                   return (
                     <button
                       key={u._id}
@@ -146,12 +147,19 @@ export default function ArtistsPage() {
                       className={cn(
                         "group shrink-0 flex items-center rounded-full transition-all duration-300 ease-out",
                         "hover:pr-2",
-                        !isHexColor && u.avatarColor,
+                        !hasImage && !isHexColor && u.avatarColor,
                         u._id === user?._id && "ring-2 ring-primary ring-offset-2"
                       )}
-                      style={bgColor ? { backgroundColor: bgColor } : undefined}
+                      style={!hasImage && bgColor ? { backgroundColor: bgColor } : undefined}
                     >
                       <Avatar className="w-10 h-10">
+                        {hasImage && (
+                          <AvatarImage
+                            src={u.avatarImageUrl!}
+                            alt={u.username}
+                            className="object-cover"
+                          />
+                        )}
                         <AvatarFallback
                           className={cn(
                             "text-sm font-medium text-white",
@@ -162,7 +170,10 @@ export default function ArtistsPage() {
                           {u.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium text-white opacity-0 transition-all duration-300 ease-out group-hover:max-w-32 group-hover:opacity-100 group-hover:ml-2">
+                      <span className={cn(
+                        "max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium opacity-0 transition-all duration-300 ease-out group-hover:max-w-32 group-hover:opacity-100 group-hover:ml-2",
+                        hasImage ? "text-foreground" : "text-white"
+                      )}>
                         {u.username}
                       </span>
                     </button>

@@ -32,9 +32,11 @@ export default function AdminLayout({
       ? "users"
       : pathname.includes("/groups")
         ? "groups"
-        : pathname.includes("/settings")
-          ? "settings"
-          : "artists";
+        : pathname.includes("/avatars")
+          ? "avatars"
+          : pathname.includes("/settings")
+            ? "settings"
+            : "artists";
 
   return (
     <ProtectedRoute>
@@ -48,7 +50,7 @@ export default function AdminLayout({
           </div>
 
           <Tabs value={activeTab} className="w-full">
-            <TabsList>
+            <TabsList className="w-full overflow-x-auto">
               <TabsTrigger value="artists" render={<Link href="/admin/artists" />} nativeButton={false}>
                 Artists
               </TabsTrigger>
@@ -57,6 +59,9 @@ export default function AdminLayout({
               </TabsTrigger>
               <TabsTrigger value="groups" render={<Link href="/admin/groups" />} nativeButton={false}>
                 Groups
+              </TabsTrigger>
+              <TabsTrigger value="avatars" render={<Link href="/admin/avatars" />} nativeButton={false}>
+                Avatars
               </TabsTrigger>
               <TabsTrigger value="settings" render={<Link href="/admin/settings" />} nativeButton={false}>
                 Settings

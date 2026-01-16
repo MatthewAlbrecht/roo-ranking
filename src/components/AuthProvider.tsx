@@ -20,6 +20,7 @@ type User = {
   username: string;
   isAdmin: boolean;
   avatarColor: string;
+  avatarImageId?: Id<"_storage">;
   yearsAttended?: number[];
   questionnaire?: Questionnaire;
   onboardingComplete?: boolean;

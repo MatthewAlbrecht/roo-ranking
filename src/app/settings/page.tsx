@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuth } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
@@ -11,10 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Id } from "../../../convex/_generated/dataModel";
 
 // Bonnaroo years
 const BONNAROO_YEARS = Array.from({ length: 24 }, (_, i) => 2002 + i);
@@ -35,10 +37,15 @@ export default function SettingsPage() {
   const { user, token } = useAuth();
   const updateProfile = useMutation(api.users.updateProfile);
   const changePassword = useMutation(api.users.changePassword);
+  const setUserAvatar = useMutation(api.avatars.setUserAvatar);
+  const clearUserAvatar = useMutation(api.avatars.clearUserAvatar);
+  const availableAvatars = useQuery(api.avatars.getAllAvatars);
 
   // Avatar color state
   const [avatarColor, setAvatarColor] = useState(user?.avatarColor || "#6366f1");
   const [colorSaving, setColorSaving] = useState(false);
+  const [selectedAvatarId, setSelectedAvatarId] = useState<Id<"_storage"> | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
 
   // Years attended state
   const [yearsAttended, setYearsAttended] = useState<number[]>(user?.yearsAttended || []);
@@ -69,13 +76,31 @@ export default function SettingsPage() {
   const handleSaveColor = async () => {
     if (!user || !token) return;
     setColorSaving(true);
+    // Clear any avatar image when saving color
+    if (user.avatarImageId) {
+      await clearUserAvatar({ token });
+    }
     const result = await updateProfile({ token, avatarColor });
     if (result.success) {
       toast.success("Avatar color updated");
+      setSelectedAvatarId(null);
     } else {
       toast.error(result.error || "Failed to update color");
     }
     setColorSaving(false);
+  };
+
+  const handleSelectAvatar = async (storageId: Id<"_storage">) => {
+    if (!token) return;
+    setAvatarSaving(true);
+    setSelectedAvatarId(storageId);
+    const result = await setUserAvatar({ token, storageId });
+    if (result.success) {
+      toast.success("Avatar updated");
+    } else {
+      toast.error("Failed to update avatar");
+    }
+    setAvatarSaving(false);
   };
 
   const handleSaveYears = async () => {
@@ -218,25 +243,95 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Avatar</CardTitle>
-              <CardDescription>Choose your avatar color</CardDescription>
+              <CardDescription>Choose an avatar image or color</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Current Avatar Preview */}
               <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16">
+                <Avatar className="w-24 h-24">
+                  {(selectedAvatarId || user?.avatarImageId) && availableAvatars?.find(a => a.storageId === (selectedAvatarId || user?.avatarImageId))?.url ? (
+                    <AvatarImage
+                      src={availableAvatars.find(a => a.storageId === (selectedAvatarId || user?.avatarImageId))?.url || ""}
+                      alt="Avatar"
+                      className="object-cover"
+                    />
+                  ) : null}
                   <AvatarFallback
-                    className="text-2xl font-semibold text-white"
+                    className="text-3xl font-semibold text-white"
                     style={{ backgroundColor: avatarColor }}
                   >
                     {user?.username?.charAt(0).toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <ColorPicker color={avatarColor} onChange={setAvatarColor} />
+                <div className="text-sm text-muted-foreground">
+                  {selectedAvatarId || user?.avatarImageId ? "Using image avatar" : "Using color avatar"}
                 </div>
               </div>
-              <Button onClick={handleSaveColor} disabled={colorSaving}>
-                {colorSaving ? "Saving..." : "Save Color"}
-              </Button>
+
+              {/* Avatar Images Selection */}
+              {availableAvatars && availableAvatars.length > 0 && (
+                <div className="space-y-3">
+                  <Label>Select an avatar</Label>
+                  <div className="flex flex-wrap gap-4">
+                    {availableAvatars.map((avatar) => (
+                      <button
+                        key={avatar._id}
+                        onClick={() => handleSelectAvatar(avatar.storageId)}
+                        disabled={avatarSaving}
+                        className={cn(
+                          "relative rounded-full overflow-hidden transition-all",
+                          "hover:ring-2 hover:ring-primary hover:ring-offset-2",
+                          (selectedAvatarId || user?.avatarImageId) === avatar.storageId &&
+                            "ring-2 ring-primary ring-offset-2"
+                        )}
+                      >
+                        {avatar.url ? (
+                          <img
+                            src={avatar.url}
+                            alt={avatar.name}
+                            className="w-16 h-16 object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-muted flex items-center justify-center">?</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Color Picker in Popover */}
+              <div className="flex items-center gap-3 pt-2">
+                <Popover>
+                  <PopoverTrigger>
+                    <div
+                      className={cn(
+                        "w-16 h-16 rounded-full cursor-pointer transition-all",
+                        "hover:ring-2 hover:ring-primary hover:ring-offset-2",
+                        !selectedAvatarId && !user?.avatarImageId && "ring-2 ring-primary ring-offset-2"
+                      )}
+                      style={{ backgroundColor: avatarColor }}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3">
+                    <div className="space-y-3">
+                      <Label className="text-sm">Pick a color</Label>
+                      <ColorPicker color={avatarColor} onChange={setAvatarColor} />
+                      <Button
+                        onClick={handleSaveColor}
+                        disabled={colorSaving}
+                        size="sm"
+                        className="w-full"
+                      >
+                        {colorSaving ? "Saving..." : "Use This Color"}
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <span className="text-sm text-muted-foreground">
+                  Or pick a custom color
+                </span>
+              </div>
             </CardContent>
           </Card>
 

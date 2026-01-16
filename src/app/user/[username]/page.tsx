@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -97,7 +97,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ username
 
             {isLoading ? (
               <div className="flex items-center gap-4">
-                <Skeleton className="w-16 h-16 rounded-full" />
+                <Skeleton className="w-24 h-24 rounded-full" />
                 <div>
                   <Skeleton className="h-8 w-32 mb-2" />
                   <Skeleton className="h-4 w-48" />
@@ -105,10 +105,17 @@ export default function UserProfilePage({ params }: { params: Promise<{ username
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16">
+                <Avatar className="w-24 h-24">
+                  {userProfile?.avatarImageUrl && (
+                    <AvatarImage
+                      src={userProfile.avatarImageUrl}
+                      alt={userProfile.username}
+                      className="object-cover"
+                    />
+                  )}
                   <AvatarFallback
                     className={cn(
-                      "text-2xl font-semibold text-white",
+                      "text-3xl font-semibold text-white",
                       !isHexColor && userProfile?.avatarColor
                     )}
                     style={isHexColor ? { backgroundColor: userProfile?.avatarColor } : undefined}
