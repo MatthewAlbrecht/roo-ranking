@@ -22,6 +22,75 @@ import {
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
 
+function EditableName({
+  avatarId,
+  initialName,
+  token
+}: {
+  avatarId: Id<"avatars">;
+  initialName: string;
+  token: string | null;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(initialName);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const updateAvatarName = useMutation(api.avatars.updateAvatarName);
+
+  const handleSave = async () => {
+    if (!token || !name.trim()) return;
+
+    if (name.trim() !== initialName) {
+      const result = await updateAvatarName({ token, avatarId, name: name.trim() });
+      if (result.success) {
+        toast.success("Name updated");
+      } else {
+        toast.error(result.error || "Failed to update name");
+        setName(initialName);
+      }
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      setName(initialName);
+      setIsEditing(false);
+    }
+  };
+
+  const handleClick = () => {
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        autoFocus
+        className="text-xs text-center w-full bg-transparent border-b border-primary outline-none"
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={handleClick}
+      className="text-xs text-center truncate w-full cursor-pointer hover:text-primary transition-colors"
+      title="Click to edit"
+    >
+      {initialName}
+    </span>
+  );
+}
+
 export default function AdminAvatarsPage() {
   const { token } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -178,9 +247,11 @@ export default function AdminAvatarsPage() {
                         ?
                       </div>
                     )}
-                    <span className="text-xs text-center truncate w-full">
-                      {avatar.name}
-                    </span>
+                    <EditableName
+                      avatarId={avatar._id}
+                      initialName={avatar.name}
+                      token={token}
+                    />
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger

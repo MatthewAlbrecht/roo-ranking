@@ -114,6 +114,26 @@ export const getAvatarUrl = query({
   },
 });
 
+// Update avatar name (admin only)
+export const updateAvatarName = mutation({
+  args: {
+    token: v.string(),
+    avatarId: v.id("avatars"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx, args.token);
+
+    const avatar = await ctx.db.get(args.avatarId);
+    if (!avatar) {
+      return { success: false, error: "Avatar not found" };
+    }
+
+    await ctx.db.patch(args.avatarId, { name: args.name });
+    return { success: true };
+  },
+});
+
 // Admin: Set any user's avatar image
 export const adminSetUserAvatar = mutation({
   args: {
