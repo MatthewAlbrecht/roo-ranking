@@ -129,3 +129,39 @@ export const getOtherRankingsForYear = query({
     return otherRankings;
   },
 });
+
+// Get aggregate rankings for a year
+export const getAggregateRankings = query({
+  args: { year: v.number() },
+  handler: async (ctx, args) => {
+    // Get all artists for the year
+    const artists = await ctx.db
+      .query("artists")
+      .withIndex("by_year", (q) => q.eq("year", args.year))
+      .collect();
+
+    // Get all rankings for these artists
+    const results = await Promise.all(
+      artists.map(async (artist) => {
+        const rankings = await ctx.db
+          .query("rankings")
+          .withIndex("by_artist", (q) => q.eq("artistId", artist._id))
+          .collect();
+
+        const count = rankings.length;
+        const avg = count > 0
+          ? rankings.reduce((sum, r) => sum + r.score, 0) / count
+          : null;
+
+        return {
+          artistId: artist._id,
+          name: artist.name,
+          avgScore: avg,
+          ratingCount: count,
+        };
+      })
+    );
+
+    return results;
+  },
+});

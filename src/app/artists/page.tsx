@@ -13,6 +13,7 @@ import { OtherRankings } from "@/components/OtherRankings";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,7 @@ export default function ArtistsPage() {
   const { user } = useAuth();
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | "bali">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "bali" | "my">("all");
 
   const activeYear = useQuery(api.settings.getActiveYear);
   const artists = useQuery(
@@ -58,6 +59,22 @@ export default function ArtistsPage() {
     return "bg-red-500 text-white";
   };
 
+  const getScoreTextColor = (score: number) => {
+    if (score >= 8) return "text-green-600";
+    if (score >= 5) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  // For "My Ranking" tab - split into ranked and unranked
+  const myRankedArtists = artists
+    ?.filter((a) => rankings?.[a._id] !== undefined)
+    .map((a) => ({ ...a, score: rankings![a._id] }))
+    .sort((a, b) => b.score - a.score) ?? [];
+
+  const myUnrankedArtists = artists
+    ?.filter((a) => rankings?.[a._id] === undefined)
+    .sort((a, b) => a.name.localeCompare(b.name)) ?? [];
+
   const handleArtistClick = (artist: Artist) => {
     setSelectedArtist(artist);
     setDrawerOpen(true);
@@ -78,9 +95,10 @@ export default function ArtistsPage() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={(v) => v && setActiveTab(v as "all" | "bali")} className="flex-1 flex flex-col">
+          <Tabs value={activeTab} onValueChange={(v) => v && setActiveTab(v as "all" | "bali" | "my")} className="flex-1 flex flex-col">
             <TabsList>
-              <TabsTrigger value="all">All Artists</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="my">My Ranking</TabsTrigger>
               <TabsTrigger value="bali">BALI</TabsTrigger>
             </TabsList>
 
@@ -131,6 +149,58 @@ export default function ArtistsPage() {
                         </button>
                       );
                     })}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+
+            <TabsContent value="my" className="flex-1 mt-4">
+              {isLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <ScrollArea className="h-[calc(100vh-14rem)] -mx-4">
+                  <div className="px-4">
+                    {/* Ranked Artists */}
+                    {myRankedArtists.map((artist, index) => (
+                      <button
+                        key={artist._id}
+                        onClick={() => handleArtistClick(artist)}
+                        className="w-full flex items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors text-left"
+                      >
+                        <span className="w-10 text-sm font-medium text-muted-foreground">
+                          #{index + 1}
+                        </span>
+                        <span className="flex-1 font-medium">{artist.name}</span>
+                        <span className={`font-semibold ${getScoreTextColor(artist.score)}`}>
+                          {artist.score}
+                        </span>
+                      </button>
+                    ))}
+
+                    {/* Unranked Artists Section */}
+                    {myUnrankedArtists.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-4 py-6">
+                          <Separator className="flex-1" />
+                          <span className="text-sm text-muted-foreground">Not Ranked</span>
+                          <Separator className="flex-1" />
+                        </div>
+                        {myUnrankedArtists.map((artist) => (
+                          <button
+                            key={artist._id}
+                            onClick={() => handleArtistClick(artist)}
+                            className="w-full flex items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors text-left"
+                          >
+                            <span className="w-10" />
+                            <span className="flex-1 text-muted-foreground">{artist.name}</span>
+                          </button>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </ScrollArea>
               )}
