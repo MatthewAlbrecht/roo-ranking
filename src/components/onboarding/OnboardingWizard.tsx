@@ -11,6 +11,7 @@ import { StepAvatarColor } from "./StepAvatarColor";
 import { StepYearsAttended } from "./StepYearsAttended";
 import { StepQuestionnaire, QuestionnaireData } from "./StepQuestionnaire";
 import { toast } from "sonner";
+import { Id } from "../../../convex/_generated/dataModel";
 
 type Step = "credentials" | "avatar" | "years" | "questionnaire";
 
@@ -18,7 +19,7 @@ const STEPS: Step[] = ["credentials", "avatar", "years", "questionnaire"];
 
 const STEP_TITLES: Record<Step, string> = {
   credentials: "Create Account",
-  avatar: "Choose Your Color",
+  avatar: "Choose Your Avatar",
   years: "Your Bonnaroo History",
   questionnaire: "About You",
 };
@@ -35,7 +36,7 @@ export function OnboardingWizard() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [avatarColor, setAvatarColor] = useState("#6366f1"); // Indigo default
+  const [avatarImageId, setAvatarImageId] = useState<Id<"_storage"> | null>(null);
   const [yearsAttended, setYearsAttended] = useState<number[]>([]);
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireData>({});
 
@@ -63,7 +64,8 @@ export function OnboardingWizard() {
       const result = await register({
         username,
         password,
-        avatarColor,
+        avatarColor: "#6366f1", // Default fallback color
+        avatarImageId: avatarImageId ?? undefined,
         yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
         questionnaire: includeQuestionnaire && Object.values(questionnaire).some(v => v?.trim())
           ? questionnaire
@@ -125,8 +127,8 @@ export function OnboardingWizard() {
         {currentStep === "avatar" && (
           <StepAvatarColor
             username={username}
-            color={avatarColor}
-            onColorChange={setAvatarColor}
+            selectedAvatarId={avatarImageId}
+            onAvatarChange={setAvatarImageId}
             onNext={goToNext}
             onBack={goBack}
           />

@@ -187,6 +187,7 @@ export const register = mutation({
     username: v.string(),
     password: v.string(),
     avatarColor: v.string(),
+    avatarImageId: v.optional(v.id("_storage")),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
@@ -214,6 +215,7 @@ export const register = mutation({
       password: hashedPassword,
       isAdmin: false,
       avatarColor: args.avatarColor,
+      avatarImageId: args.avatarImageId,
       createdAt: Date.now(),
       yearsAttended: args.yearsAttended,
       questionnaire: args.questionnaire,
@@ -270,6 +272,7 @@ export const completeOnboarding = mutation({
   args: {
     token: v.string(),
     avatarColor: v.string(),
+    avatarImageId: v.optional(v.id("_storage")),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
@@ -278,6 +281,7 @@ export const completeOnboarding = mutation({
 
     await ctx.db.patch(userId, {
       avatarColor: args.avatarColor,
+      avatarImageId: args.avatarImageId,
       yearsAttended: args.yearsAttended,
       questionnaire: args.questionnaire,
       onboardingComplete: true,

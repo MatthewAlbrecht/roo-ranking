@@ -11,13 +11,14 @@ import { StepAvatarColor } from "@/components/onboarding/StepAvatarColor";
 import { StepYearsAttended } from "@/components/onboarding/StepYearsAttended";
 import { StepQuestionnaire, QuestionnaireData } from "@/components/onboarding/StepQuestionnaire";
 import { toast } from "sonner";
+import { Id } from "../../../convex/_generated/dataModel";
 
 type Step = "avatar" | "years" | "questionnaire";
 
 const STEPS: Step[] = ["avatar", "years", "questionnaire"];
 
 const STEP_TITLES: Record<Step, string> = {
-  avatar: "Choose Your Color",
+  avatar: "Choose Your Avatar",
   years: "Your Bonnaroo History",
   questionnaire: "About You",
 };
@@ -31,14 +32,14 @@ export default function CompleteOnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
-  const [avatarColor, setAvatarColor] = useState("#6366f1");
+  const [avatarImageId, setAvatarImageId] = useState<Id<"_storage"> | null>(null);
   const [yearsAttended, setYearsAttended] = useState<number[]>([]);
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireData>({});
 
   // Initialize with existing user data if available
   useEffect(() => {
     if (user) {
-      if (user.avatarColor) setAvatarColor(user.avatarColor);
+      if (user.avatarImageId) setAvatarImageId(user.avatarImageId);
       if (user.yearsAttended) setYearsAttended(user.yearsAttended);
       if (user.questionnaire) setQuestionnaire(user.questionnaire);
     }
@@ -81,7 +82,8 @@ export default function CompleteOnboardingPage() {
     try {
       const result = await completeOnboarding({
         token,
-        avatarColor,
+        avatarColor: "#6366f1", // Default fallback color
+        avatarImageId: avatarImageId ?? undefined,
         yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
         questionnaire: includeQuestionnaire && Object.values(questionnaire).some(v => v?.trim())
           ? questionnaire
@@ -145,8 +147,8 @@ export default function CompleteOnboardingPage() {
           {currentStep === "avatar" && (
             <StepAvatarColor
               username={user.username}
-              color={avatarColor}
-              onColorChange={setAvatarColor}
+              selectedAvatarId={avatarImageId}
+              onAvatarChange={setAvatarImageId}
               onNext={goToNext}
               showBack={false}
             />
