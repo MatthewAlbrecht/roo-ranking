@@ -135,7 +135,7 @@ export default function ArtistsPage() {
 
             {/* User Avatars Row */}
             {displayUsers.length > 0 && (
-              <div className="flex gap-3 mt-3 overflow-x-auto py-2 -mx-2 px-2">
+              <div className="flex gap-2 mt-3 overflow-x-auto py-2 -mx-2 px-2">
                 {displayUsers.map((u) => {
                   const isHexColor = u.avatarColor?.startsWith("#");
                   return (
@@ -143,9 +143,11 @@ export default function ArtistsPage() {
                       key={u._id}
                       onClick={() => handleUserClick(u.username)}
                       className={cn(
-                        "shrink-0 transition-all hover:scale-110",
-                        u._id === user?._id && "ring-2 ring-primary ring-offset-2 rounded-full"
+                        "group shrink-0 flex items-center rounded-full transition-all duration-300 ease-out",
+                        "hover:pr-2",
+                        u._id === user?._id && "ring-2 ring-primary ring-offset-2"
                       )}
+                      style={isHexColor ? { backgroundColor: u.avatarColor } : undefined}
                     >
                       <Avatar className="w-10 h-10">
                         <AvatarFallback
@@ -158,6 +160,9 @@ export default function ArtistsPage() {
                           {u.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
+                      <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium text-white opacity-0 transition-all duration-300 ease-out group-hover:max-w-32 group-hover:opacity-100 group-hover:ml-2">
+                        {u.username}
+                      </span>
                     </button>
                   );
                 })}

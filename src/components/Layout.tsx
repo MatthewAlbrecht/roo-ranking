@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "./AuthProvider";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +10,12 @@ import { cn } from "@/lib/utils";
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   if (!user) return <>{children}</>;
 
@@ -70,7 +77,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {user.username}
             </Link>
-            <Button variant="outline" size="sm" onClick={() => logout()}>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
               Logout
             </Button>
           </div>

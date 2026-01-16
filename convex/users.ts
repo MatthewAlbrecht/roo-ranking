@@ -15,6 +15,26 @@ const questionnaireValidator = v.object({
 
 // Login is now in convex/auth.ts
 
+// TEMPORARY: Reset password by username (no auth required) - DELETE AFTER USE
+export const tempResetPassword = mutation({
+  args: { username: v.string(), newPassword: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .unique();
+
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    const hashedPassword = bcrypt.hashSync(args.newPassword, SALT_ROUNDS);
+    await ctx.db.patch(user._id, { password: hashedPassword });
+
+    return { success: true };
+  },
+});
+
 // Get user by ID (for session restoration) - legacy, use getCurrentUser instead
 export const getUser = query({
   args: { userId: v.id("users") },
