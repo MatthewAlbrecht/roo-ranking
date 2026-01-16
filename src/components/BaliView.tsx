@@ -4,11 +4,10 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
-import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserAvatar } from "@/components/UserAvatar";
+import { OtherRankings } from "@/components/OtherRankings";
 import { cn } from "@/lib/utils";
 
 type Artist = {
@@ -73,23 +72,14 @@ export function BaliView({ year, rankings, otherRankings, userMap, onArtistClick
                 <span className="font-medium text-sm">{artist.name}</span>
                 <div className="flex items-center gap-2">
                   {score !== null && others.length > 0 && (
-                    <AvatarGroup>
-                      {others.slice(0, 3).map((r) => {
+                    <OtherRankings
+                      rankings={others.map((r) => {
                         const otherUser = userMap.get(r.userId);
-                        if (!otherUser) return null;
-                        return (
-                          <UserAvatar
-                            key={r.userId}
-                            username={otherUser.username}
-                            avatarColor={otherUser.avatarColor}
-                            score={r.score}
-                          />
-                        );
-                      })}
-                      {others.length > 3 && (
-                        <AvatarGroupCount>+{others.length - 3}</AvatarGroupCount>
-                      )}
-                    </AvatarGroup>
+                        return otherUser
+                          ? { userId: r.userId, username: otherUser.username, avatarColor: otherUser.avatarColor, score: r.score }
+                          : null;
+                      }).filter((r): r is NonNullable<typeof r> => r !== null)}
+                    />
                   )}
                   {score !== null && (
                     <Badge className={cn("min-w-[2rem] justify-center text-xs", getScoreColor(score))}>

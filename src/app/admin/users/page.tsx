@@ -20,17 +20,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Id } from "../../../../convex/_generated/dataModel";
 
 const AVATAR_COLORS = [
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#22c55e", // green
-  "#3b82f6", // blue
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#14b8a6", // teal
-  "#f97316", // orange
+  "bg-amber-500",
+  "bg-red-500",
+  "bg-green-500",
+  "bg-blue-500",
+  "bg-violet-500",
+  "bg-pink-500",
+  "bg-teal-500",
+  "bg-orange-500",
 ];
 
 export default function AdminUsersPage() {
@@ -43,6 +48,7 @@ export default function AdminUsersPage() {
 
   const users = useQuery(api.users.getAllUsers);
   const createUser = useMutation(api.users.createUser);
+  const updateUserColor = useMutation(api.users.updateUserColor);
   const deleteUser = useMutation(api.users.deleteUser);
 
   const handleCreateUser = async () => {
@@ -106,20 +112,18 @@ export default function AdminUsersPage() {
                   key={color}
                   type="button"
                   onClick={() => setSelectedColor(color)}
-                  className={`w-8 h-8 rounded-full transition-all ${
+                  className={`w-8 h-8 rounded-full transition-all ${color} ${
                     selectedColor === color
                       ? "ring-2 ring-offset-2 ring-foreground"
                       : ""
                   }`}
-                  style={{ backgroundColor: color }}
                 />
               ))}
             </div>
             {/* Preview */}
             <div className="flex items-center gap-2 mt-2">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
-                style={{ backgroundColor: selectedColor }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${selectedColor}`}
               >
                 {username.charAt(0).toUpperCase() || "?"}
               </div>
@@ -153,12 +157,31 @@ export default function AdminUsersPage() {
                   className="flex items-center justify-between py-2"
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                      style={{ backgroundColor: user.avatarColor }}
-                    >
-                      {user.username.charAt(0).toUpperCase()}
-                    </div>
+                    <Popover>
+                      <PopoverTrigger>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-foreground transition-all ${user.avatarColor}`}
+                        >
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-3">
+                        <div className="flex gap-2 flex-wrap max-w-[200px]">
+                          {AVATAR_COLORS.map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => updateUserColor({ userId: user._id, avatarColor: color })}
+                              className={`w-8 h-8 rounded-full transition-all ${color} ${
+                                user.avatarColor === color
+                                  ? "ring-2 ring-offset-2 ring-foreground"
+                                  : ""
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <div>
                       <span className="font-medium">{user.username}</span>
                       {user.isAdmin && (

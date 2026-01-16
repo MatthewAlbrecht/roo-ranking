@@ -83,6 +83,23 @@ export const createUser = mutation({
   },
 });
 
+// Update user avatar color (admin only)
+export const updateUserColor = mutation({
+  args: {
+    userId: v.id("users"),
+    avatarColor: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    await ctx.db.patch(args.userId, { avatarColor: args.avatarColor });
+    return { success: true };
+  },
+});
+
 // Delete user (admin only)
 export const deleteUser = mutation({
   args: { userId: v.id("users") },

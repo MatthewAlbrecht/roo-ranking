@@ -9,9 +9,8 @@ import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RankingDrawer } from "@/components/RankingDrawer";
 import { BaliView } from "@/components/BaliView";
-import { UserAvatar } from "@/components/UserAvatar";
+import { OtherRankings } from "@/components/OtherRankings";
 import { Badge } from "@/components/ui/badge";
-import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -114,23 +113,14 @@ export default function ArtistsPage() {
                           <span className="font-medium">{artist.name}</span>
                           <div className="flex items-center gap-2">
                             {score !== null && others.length > 0 && (
-                              <AvatarGroup>
-                                {others.slice(0, 3).map((r) => {
+                              <OtherRankings
+                                rankings={others.map((r) => {
                                   const otherUser = userMap.get(r.userId);
-                                  if (!otherUser) return null;
-                                  return (
-                                    <UserAvatar
-                                      key={r.userId}
-                                      username={otherUser.username}
-                                      avatarColor={otherUser.avatarColor}
-                                      score={r.score}
-                                    />
-                                  );
-                                })}
-                                {others.length > 3 && (
-                                  <AvatarGroupCount>+{others.length - 3}</AvatarGroupCount>
-                                )}
-                              </AvatarGroup>
+                                  return otherUser
+                                    ? { userId: r.userId, username: otherUser.username, avatarColor: otherUser.avatarColor, score: r.score }
+                                    : null;
+                                }).filter((r): r is NonNullable<typeof r> => r !== null)}
+                              />
                             )}
                             {score !== null && (
                               <Badge className={cn("min-w-[2rem] justify-center", getScoreColor(score))}>
