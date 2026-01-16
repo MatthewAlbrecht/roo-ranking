@@ -138,6 +138,7 @@ export default function ArtistsPage() {
               <div className="flex gap-2 mt-3 overflow-x-auto py-2 -mx-2 px-2">
                 {displayUsers.map((u) => {
                   const isHexColor = u.avatarColor?.startsWith("#");
+                  const bgColor = isHexColor ? u.avatarColor : undefined;
                   return (
                     <button
                       key={u._id}
@@ -145,9 +146,10 @@ export default function ArtistsPage() {
                       className={cn(
                         "group shrink-0 flex items-center rounded-full transition-all duration-300 ease-out",
                         "hover:pr-2",
+                        !isHexColor && u.avatarColor,
                         u._id === user?._id && "ring-2 ring-primary ring-offset-2"
                       )}
-                      style={isHexColor ? { backgroundColor: u.avatarColor } : undefined}
+                      style={bgColor ? { backgroundColor: bgColor } : undefined}
                     >
                       <Avatar className="w-10 h-10">
                         <AvatarFallback
@@ -155,7 +157,7 @@ export default function ArtistsPage() {
                             "text-sm font-medium text-white",
                             !isHexColor && u.avatarColor
                           )}
-                          style={isHexColor ? { backgroundColor: u.avatarColor } : undefined}
+                          style={bgColor ? { backgroundColor: bgColor } : undefined}
                         >
                           {u.username.charAt(0).toUpperCase()}
                         </AvatarFallback>
