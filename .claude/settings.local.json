@@ -14,7 +14,9 @@
       "Bash(nvm use:*)",
       "Bash(pnpm convex deploy:*)",
       "Bash(pnpm exec convex deploy:*)",
-      "Bash(pnpm exec convex run:*)"
+      "Bash(pnpm exec convex run:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx next build)"
     ]
   }
 }

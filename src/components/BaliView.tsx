@@ -4,28 +4,38 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
+import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UserAvatar } from "@/components/UserAvatar";
 import { cn } from "@/lib/utils";
 
 type Artist = {
   _id: Id<"artists">;
+  _creationTime: number;
   name: string;
   year: number;
+};
+
+type User = {
+  username: string;
+  avatarColor: string;
 };
 
 type BaliViewProps = {
   year: number;
   rankings: Record<string, number>;
-  onArtistClick: (artist: Artist) => void;
+  otherRankings: Record<string, Array<{ userId: string; score: number }>>;
+  userMap: Map<string, User>;
+  onArtistClick: (artist: { _id: Id<"artists">; name: string; year: number }) => void;
 };
 
-export function BaliView({ year, rankings, onArtistClick }: BaliViewProps) {
-  const groupsData = useQuery(api.groups.getCurrentAndNextGroups, { year });
+export function BaliView({ year, rankings, otherRankings, userMap, onArtistClick }: BaliViewProps) {
+  const groups = useQuery(api.groups.getGroupsByYear, { year });
   const artists = useQuery(api.artists.getArtistsByYear, { year });
 
-  const isLoading = groupsData === undefined || artists === undefined;
+  const isLoading = groups === undefined || artists === undefined;
   const artistMap = new Map(artists?.map((a) => [a._id, a]) ?? []);
 
   const getScoreColor = (score: number) => {
@@ -50,6 +60,7 @@ export function BaliView({ year, rankings, onArtistClick }: BaliViewProps) {
         <div className="space-y-1">
           {groupArtists.map((artist) => {
             const score = rankings[artist._id] ?? null;
+            const others = otherRankings[artist._id] ?? [];
             return (
               <button
                 key={artist._id}
@@ -60,11 +71,32 @@ export function BaliView({ year, rankings, onArtistClick }: BaliViewProps) {
                 )}
               >
                 <span className="font-medium text-sm">{artist.name}</span>
-                {score !== null && (
-                  <Badge className={cn("min-w-[2rem] justify-center text-xs", getScoreColor(score))}>
-                    {score}
-                  </Badge>
-                )}
+                <div className="flex items-center gap-2">
+                  {score !== null && others.length > 0 && (
+                    <AvatarGroup>
+                      {others.slice(0, 3).map((r) => {
+                        const otherUser = userMap.get(r.userId);
+                        if (!otherUser) return null;
+                        return (
+                          <UserAvatar
+                            key={r.userId}
+                            username={otherUser.username}
+                            avatarColor={otherUser.avatarColor}
+                            score={r.score}
+                          />
+                        );
+                      })}
+                      {others.length > 3 && (
+                        <AvatarGroupCount>+{others.length - 3}</AvatarGroupCount>
+                      )}
+                    </AvatarGroup>
+                  )}
+                  {score !== null && (
+                    <Badge className={cn("min-w-[2rem] justify-center text-xs", getScoreColor(score))}>
+                      {score}
+                    </Badge>
+                  )}
+                </div>
               </button>
             );
           })}
@@ -82,43 +114,26 @@ export function BaliView({ year, rankings, onArtistClick }: BaliViewProps) {
     );
   }
 
-  const { current, next } = groupsData;
-
-  if (!current && !next) {
+  if (!groups || groups.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No BALI groups are currently active</p>
+        <p className="text-muted-foreground">No BALI groups have been created</p>
         <p className="text-sm text-muted-foreground mt-1">Check back later or view all artists</p>
       </div>
     );
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-16rem)]">
-      <div className="space-y-4 pr-4">
-        {current && (
-          <Card>
+    <ScrollArea className="h-[calc(100vh-16rem)] -mx-4">
+      <div className="space-y-4 p-4">
+        {[...groups].reverse().map((group) => (
+          <Card key={group._id}>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Badge className="bg-green-500">Current</Badge>
-                {current.name}
-              </CardTitle>
+              <CardTitle className="text-base">{group.name}</CardTitle>
             </CardHeader>
-            <CardContent>{renderArtistList(current.artistIds)}</CardContent>
+            <CardContent>{renderArtistList(group.artistIds)}</CardContent>
           </Card>
-        )}
-
-        {next && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Badge className="bg-blue-500">Up Next</Badge>
-                {next.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>{renderArtistList(next.artistIds)}</CardContent>
-          </Card>
-        )}
+        ))}
       </div>
     </ScrollArea>
   );

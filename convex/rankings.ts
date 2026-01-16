@@ -86,3 +86,46 @@ export const getUserRankingsForYear = query({
     return rankingsMap;
   },
 });
+
+// Get all other users' rankings for artists the current user has ranked
+export const getOtherRankingsForYear = query({
+  args: {
+    userId: v.id("users"),
+    year: v.number(),
+  },
+  handler: async (ctx, args) => {
+    // Get artists for this year
+    const artists = await ctx.db
+      .query("artists")
+      .withIndex("by_year", (q) => q.eq("year", args.year))
+      .collect();
+    const artistIdsForYear = new Set(artists.map((a) => a._id.toString()));
+
+    // Get current user's rankings to know which artists they've rated
+    const userRankings = await ctx.db
+      .query("rankings")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    // Filter to only this year's artists
+    const ratedArtistIds = userRankings
+      .filter((r) => artistIdsForYear.has(r.artistId.toString()))
+      .map((r) => r.artistId);
+
+    // Get all rankings for those artists from other users
+    const otherRankings: Record<string, Array<{ userId: string; score: number }>> = {};
+
+    for (const artistId of ratedArtistIds) {
+      const rankings = await ctx.db
+        .query("rankings")
+        .withIndex("by_artist", (q) => q.eq("artistId", artistId))
+        .collect();
+
+      otherRankings[artistId] = rankings
+        .filter((r) => r.userId.toString() !== args.userId.toString())
+        .map((r) => ({ userId: r.userId.toString(), score: r.score }));
+    }
+
+    return otherRankings;
+  },
+});

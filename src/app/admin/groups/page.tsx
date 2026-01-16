@@ -37,7 +37,6 @@ type Group = {
   name: string;
   year: number;
   artistIds: Id<"artists">[];
-  status: "current" | "next" | null;
   order: number;
 };
 
@@ -45,9 +44,9 @@ export default function AdminGroupsPage() {
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [groupName, setGroupName] = useState("");
   const [selectedArtistIds, setSelectedArtistIds] = useState<Id<"artists">[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<"current" | "next" | "none">("none");
   const [isCreating, setIsCreating] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const [artistSearch, setArtistSearch] = useState("");
 
   const groups = useQuery(api.groups.getGroupsByYear, { year: selectedYear });
   const artists = useQuery(api.artists.getArtistsByYear, { year: selectedYear });
@@ -58,6 +57,22 @@ export default function AdminGroupsPage() {
   const sortedArtists = artists?.slice().sort((a, b) => a.name.localeCompare(b.name));
   const artistMap = new Map(artists?.map((a) => [a._id, a]) ?? []);
 
+  // Filter artists by search term
+  const filteredArtists = sortedArtists?.filter((artist) =>
+    artist.name.toLowerCase().includes(artistSearch.toLowerCase())
+  );
+
+  const handleArtistSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && filteredArtists && filteredArtists.length > 0) {
+      e.preventDefault();
+      const topArtist = filteredArtists[0];
+      if (!selectedArtistIds.includes(topArtist._id)) {
+        setSelectedArtistIds((prev) => [...prev, topArtist._id]);
+      }
+      setArtistSearch("");
+    }
+  };
+
   const handleCreateGroup = async () => {
     if (!groupName.trim() || selectedArtistIds.length === 0) return;
     setIsCreating(true);
@@ -66,12 +81,10 @@ export default function AdminGroupsPage() {
       name: groupName.trim(),
       year: selectedYear,
       artistIds: selectedArtistIds,
-      status: selectedStatus === "none" ? null : selectedStatus,
     });
 
     setGroupName("");
     setSelectedArtistIds([]);
-    setSelectedStatus("none");
     setIsCreating(false);
   };
 
@@ -82,13 +95,11 @@ export default function AdminGroupsPage() {
       groupId: editingGroup._id,
       name: groupName.trim(),
       artistIds: selectedArtistIds,
-      status: selectedStatus === "none" ? null : selectedStatus,
     });
 
     setEditingGroup(null);
     setGroupName("");
     setSelectedArtistIds([]);
-    setSelectedStatus("none");
   };
 
   const handleDeleteGroup = async (groupId: Id<"groups">) => {
@@ -99,14 +110,12 @@ export default function AdminGroupsPage() {
     setEditingGroup(group);
     setGroupName(group.name);
     setSelectedArtistIds(group.artistIds);
-    setSelectedStatus(group.status ?? "none");
   };
 
   const handleCancelEdit = () => {
     setEditingGroup(null);
     setGroupName("");
     setSelectedArtistIds([]);
-    setSelectedStatus("none");
   };
 
   const toggleArtistSelection = (artistId: Id<"artists">) => {
@@ -115,12 +124,6 @@ export default function AdminGroupsPage() {
         ? prev.filter((id) => id !== artistId)
         : [...prev, artistId]
     );
-  };
-
-  const getStatusBadge = (status: "current" | "next" | null) => {
-    if (status === "current") return <Badge className="bg-green-500">Current</Badge>;
-    if (status === "next") return <Badge className="bg-blue-500">Next</Badge>;
-    return null;
   };
 
   return (
@@ -167,31 +170,24 @@ export default function AdminGroupsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Status</Label>
-            <Select
-              value={selectedStatus}
-              onValueChange={(v) => v && setSelectedStatus(v as "current" | "next" | "none")}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="current">Current</SelectItem>
-                <SelectItem value="next">Next</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>Artists ({selectedArtistIds.length} selected)</Label>
+            <Input
+              value={artistSearch}
+              onChange={(e) => setArtistSearch(e.target.value)}
+              onKeyDown={handleArtistSearchKeyDown}
+              placeholder="Search artists... (Enter to add)"
+            />
             <ScrollArea className="h-[200px] border rounded-md p-2">
               {sortedArtists?.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No artists for {selectedYear}
                 </p>
+              ) : filteredArtists?.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No artists match &quot;{artistSearch}&quot;
+                </p>
               ) : (
-                sortedArtists?.map((artist) => (
+                filteredArtists?.map((artist, index) => (
                   <button
                     key={artist._id}
                     type="button"
@@ -199,7 +195,9 @@ export default function AdminGroupsPage() {
                     className={`w-full text-left py-1.5 px-2 rounded text-sm transition-colors ${
                       selectedArtistIds.includes(artist._id)
                         ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                        : index === 0 && artistSearch
+                          ? "bg-muted"
+                          : "hover:bg-muted"
                     }`}
                   >
                     {artist.name}
@@ -257,10 +255,7 @@ export default function AdminGroupsPage() {
                     className="border rounded-lg p-3 space-y-2"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{group.name}</span>
-                        {getStatusBadge(group.status)}
-                      </div>
+                      <span className="font-medium">{group.name}</span>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"

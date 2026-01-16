@@ -9,7 +9,9 @@ import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RankingDrawer } from "@/components/RankingDrawer";
 import { BaliView } from "@/components/BaliView";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Badge } from "@/components/ui/badge";
+import { AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -38,8 +40,16 @@ export default function ArtistsPage() {
       ? { userId: user._id, year: activeYear }
       : "skip"
   );
+  const otherRankings = useQuery(
+    api.rankings.getOtherRankingsForYear,
+    user && activeYear !== undefined
+      ? { userId: user._id, year: activeYear }
+      : "skip"
+  );
+  const allUsers = useQuery(api.users.getAllUsers);
 
   const sortedArtists = artists?.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const userMap = new Map(allUsers?.map((u) => [u._id.toString(), u]) ?? []);
   const isLoading = activeYear === undefined || artists === undefined || rankings === undefined;
   const ratedCount = rankings ? Object.keys(rankings).length : 0;
 
@@ -91,6 +101,7 @@ export default function ArtistsPage() {
                   <div className="px-4">
                     {sortedArtists?.map((artist) => {
                       const score = rankings?.[artist._id] ?? null;
+                      const others = otherRankings?.[artist._id] ?? [];
                       return (
                         <button
                           key={artist._id}
@@ -101,11 +112,32 @@ export default function ArtistsPage() {
                           )}
                         >
                           <span className="font-medium">{artist.name}</span>
-                          {score !== null && (
-                            <Badge className={cn("min-w-[2rem] justify-center", getScoreColor(score))}>
-                              {score}
-                            </Badge>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {score !== null && others.length > 0 && (
+                              <AvatarGroup>
+                                {others.slice(0, 3).map((r) => {
+                                  const otherUser = userMap.get(r.userId);
+                                  if (!otherUser) return null;
+                                  return (
+                                    <UserAvatar
+                                      key={r.userId}
+                                      username={otherUser.username}
+                                      avatarColor={otherUser.avatarColor}
+                                      score={r.score}
+                                    />
+                                  );
+                                })}
+                                {others.length > 3 && (
+                                  <AvatarGroupCount>+{others.length - 3}</AvatarGroupCount>
+                                )}
+                              </AvatarGroup>
+                            )}
+                            {score !== null && (
+                              <Badge className={cn("min-w-[2rem] justify-center", getScoreColor(score))}>
+                                {score}
+                              </Badge>
+                            )}
+                          </div>
                         </button>
                       );
                     })}
@@ -119,6 +151,8 @@ export default function ArtistsPage() {
                 <BaliView
                   year={activeYear}
                   rankings={rankings}
+                  otherRankings={otherRankings ?? {}}
+                  userMap={userMap}
                   onArtistClick={handleArtistClick}
                 />
               )}
