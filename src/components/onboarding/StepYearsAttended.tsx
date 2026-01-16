@@ -15,8 +15,8 @@ interface StepYearsAttendedProps {
 // Bonnaroo started in 2002
 const BONNAROO_YEARS = Array.from({ length: 24 }, (_, i) => 2002 + i); // 2002-2025
 const CANCELED_YEARS: Record<number, string> = {
-  2021: "Hurricane Ida had other plans... 🌀",
-  2025: "The flood gods weren't having it... 🌊",
+  2021: "Liar.",
+  2025: "I'm sorry you experienced that.",
 };
 
 export function StepYearsAttended({
@@ -47,8 +47,6 @@ export function StepYearsAttended({
     }
   };
 
-  const isCanceled = (year: number) => year in CANCELED_YEARS;
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -63,7 +61,6 @@ export function StepYearsAttended({
       <div className="grid grid-cols-4 gap-2">
         {BONNAROO_YEARS.map((year) => {
           const isSelected = selectedYears.includes(year);
-          const canceled = isCanceled(year);
 
           return (
             <button
@@ -75,12 +72,10 @@ export function StepYearsAttended({
                 "hover:border-primary/50",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background border-border",
-                canceled && !isSelected && "border-dashed opacity-60"
+                  : "bg-background border-border"
               )}
             >
               {year}
-              {canceled && <span className="block text-[10px]">(canceled)</span>}
             </button>
           );
         })}

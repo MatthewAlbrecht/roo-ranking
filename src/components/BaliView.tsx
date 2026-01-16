@@ -20,6 +20,7 @@ type Artist = {
 type User = {
   username: string;
   avatarColor: string;
+  avatarImageUrl?: string | null;
 };
 
 type BaliViewProps = {
@@ -86,7 +87,7 @@ export function BaliView({ year, rankings, otherRankings, userMap, onArtistClick
                       rankings={others.map((r) => {
                         const otherUser = userMap.get(r.userId);
                         return otherUser
-                          ? { userId: r.userId, username: otherUser.username, avatarColor: otherUser.avatarColor, score: r.score }
+                          ? { userId: r.userId, username: otherUser.username, avatarColor: otherUser.avatarColor, avatarImageUrl: otherUser.avatarImageUrl, score: r.score }
                           : null;
                       }).filter((r): r is NonNullable<typeof r> => r !== null)}
                     />

@@ -12,8 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "../../../convex/_generated/dataModel";
@@ -21,8 +19,8 @@ import { Id } from "../../../convex/_generated/dataModel";
 // Bonnaroo years
 const BONNAROO_YEARS = Array.from({ length: 24 }, (_, i) => 2002 + i);
 const CANCELED_YEARS: Record<number, string> = {
-  2021: "Hurricane Ida had other plans... 🌀",
-  2025: "The flood gods weren't having it... 🌊",
+  2021: "Liar.",
+  2025: "I'm sorry you experienced that.",
 };
 
 interface QuestionnaireData {
@@ -41,9 +39,7 @@ export default function SettingsPage() {
   const clearUserAvatar = useMutation(api.avatars.clearUserAvatar);
   const availableAvatars = useQuery(api.avatars.getAllAvatars);
 
-  // Avatar color state
-  const [avatarColor, setAvatarColor] = useState(user?.avatarColor || "#6366f1");
-  const [colorSaving, setColorSaving] = useState(false);
+  // Avatar state
   const [selectedAvatarId, setSelectedAvatarId] = useState<Id<"_storage"> | null>(null);
   const [avatarSaving, setAvatarSaving] = useState(false);
 
@@ -67,28 +63,10 @@ export default function SettingsPage() {
   // Sync state when user data loads
   useEffect(() => {
     if (user) {
-      setAvatarColor(user.avatarColor || "#6366f1");
       setYearsAttended(user.yearsAttended || []);
       setQuestionnaire(user.questionnaire || {});
     }
   }, [user]);
-
-  const handleSaveColor = async () => {
-    if (!user || !token) return;
-    setColorSaving(true);
-    // Clear any avatar image when saving color
-    if (user.avatarImageId) {
-      await clearUserAvatar({ token });
-    }
-    const result = await updateProfile({ token, avatarColor });
-    if (result.success) {
-      toast.success("Avatar color updated");
-      setSelectedAvatarId(null);
-    } else {
-      toast.error(result.error || "Failed to update color");
-    }
-    setColorSaving(false);
-  };
 
   const handleSelectAvatar = async (storageId: Id<"_storage">) => {
     if (!token) return;
@@ -176,8 +154,6 @@ export default function SettingsPage() {
     }
   };
 
-  const isCanceled = (year: number) => year in CANCELED_YEARS;
-
   return (
     <ProtectedRoute>
       <Layout>
@@ -243,12 +219,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Avatar</CardTitle>
-              <CardDescription>Choose an avatar image or color</CardDescription>
+              <CardDescription>Choose an avatar image</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Current Avatar Preview */}
               <div className="flex items-center gap-4">
-                <Avatar className="w-24 h-24">
+                <Avatar className="w-48 h-48">
                   {(selectedAvatarId || user?.avatarImageId) && availableAvatars?.find(a => a.storageId === (selectedAvatarId || user?.avatarImageId))?.url ? (
                     <AvatarImage
                       src={availableAvatars.find(a => a.storageId === (selectedAvatarId || user?.avatarImageId))?.url || ""}
@@ -256,16 +232,10 @@ export default function SettingsPage() {
                       className="object-cover"
                     />
                   ) : null}
-                  <AvatarFallback
-                    className="text-3xl font-semibold text-white"
-                    style={{ backgroundColor: avatarColor }}
-                  >
+                  <AvatarFallback className="text-5xl font-semibold text-white bg-muted">
                     {user?.username?.charAt(0).toUpperCase() || "?"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-sm text-muted-foreground">
-                  {selectedAvatarId || user?.avatarImageId ? "Using image avatar" : "Using color avatar"}
-                </div>
               </div>
 
               {/* Avatar Images Selection */}
@@ -289,10 +259,10 @@ export default function SettingsPage() {
                           <img
                             src={avatar.url}
                             alt={avatar.name}
-                            className="w-16 h-16 object-cover"
+                            className="w-32 h-32 object-cover"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-muted flex items-center justify-center">?</div>
+                          <div className="w-32 h-32 bg-muted flex items-center justify-center">?</div>
                         )}
                       </button>
                     ))}
@@ -300,38 +270,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Color Picker in Popover */}
-              <div className="flex items-center gap-3 pt-2">
-                <Popover>
-                  <PopoverTrigger>
-                    <div
-                      className={cn(
-                        "w-16 h-16 rounded-xl cursor-pointer transition-all",
-                        "hover:ring-2 hover:ring-primary hover:ring-offset-2",
-                        !selectedAvatarId && !user?.avatarImageId && "ring-2 ring-primary ring-offset-2"
-                      )}
-                      style={{ backgroundColor: avatarColor }}
-                    />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-3">
-                    <div className="space-y-3">
-                      <Label className="text-sm">Pick a color</Label>
-                      <ColorPicker color={avatarColor} onChange={setAvatarColor} />
-                      <Button
-                        onClick={handleSaveColor}
-                        disabled={colorSaving}
-                        size="sm"
-                        className="w-full"
-                      >
-                        {colorSaving ? "Saving..." : "Use This Color"}
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                <span className="text-sm text-muted-foreground">
-                  Or pick a custom color
-                </span>
-              </div>
             </CardContent>
           </Card>
 
@@ -345,7 +283,6 @@ export default function SettingsPage() {
               <div className="grid grid-cols-6 gap-2">
                 {BONNAROO_YEARS.map((year) => {
                   const isSelected = yearsAttended.includes(year);
-                  const canceled = isCanceled(year);
 
                   return (
                     <button
@@ -357,8 +294,7 @@ export default function SettingsPage() {
                         "hover:border-primary/50",
                         isSelected
                           ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background border-border",
-                        canceled && !isSelected && "border-dashed opacity-60"
+                          : "bg-background border-border"
                       )}
                     >
                       {year}

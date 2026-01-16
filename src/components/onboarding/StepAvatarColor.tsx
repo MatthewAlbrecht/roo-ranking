@@ -37,7 +37,7 @@ export function StepAvatarColor({
           Choose your avatar
         </p>
         <div className="flex justify-center mb-6">
-          <Avatar className="w-28 h-28">
+          <Avatar className="w-56 h-56">
             {selectedAvatarUrl && (
               <AvatarImage
                 src={selectedAvatarUrl}
@@ -45,7 +45,7 @@ export function StepAvatarColor({
                 className="object-cover"
               />
             )}
-            <AvatarFallback className="text-3xl font-semibold text-white bg-muted">
+            <AvatarFallback className="text-5xl font-semibold text-white bg-muted">
               {username.charAt(0).toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
@@ -53,14 +53,14 @@ export function StepAvatarColor({
       </div>
 
       {availableAvatars && availableAvatars.length > 0 ? (
-        <div className="flex flex-wrap gap-3 justify-center">
+        <div className="flex flex-wrap gap-4 justify-center">
           {availableAvatars.map((avatar) => (
             <button
               key={avatar._id}
               type="button"
               onClick={() => onAvatarChange(avatar.storageId)}
               className={cn(
-                "w-16 h-16 rounded-xl overflow-hidden transition-all",
+                "w-32 h-32 rounded-xl overflow-hidden transition-all",
                 selectedAvatarId === avatar.storageId
                   ? "ring-2 ring-offset-2 ring-primary"
                   : "hover:ring-2 hover:ring-offset-2 hover:ring-muted-foreground"

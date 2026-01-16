@@ -1,12 +1,14 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage, AvatarGroup } from "@/components/ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type OtherRanking = {
   userId: string;
   username: string;
   avatarColor: string;
+  avatarImageUrl?: string | null;
   score: number;
 };
 
@@ -27,13 +29,29 @@ export function OtherRankings({ rankings, maxTooltipItems = 10 }: OtherRankingsP
     <Tooltip>
       <TooltipTrigger render={<span />}>
         <AvatarGroup>
-          {rankings.slice(0, 3).map((r) => (
-            <Avatar key={r.userId} size="sm">
-              <AvatarFallback className={`text-white font-medium text-[10px] ${r.avatarColor}`}>
-                {r.username[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          ))}
+          {rankings.slice(0, 3).map((r) => {
+            const isHexColor = r.avatarColor?.startsWith("#");
+            return (
+              <Avatar key={r.userId} size="sm">
+                {r.avatarImageUrl && (
+                  <AvatarImage
+                    src={r.avatarImageUrl}
+                    alt={r.username}
+                    className="object-cover"
+                  />
+                )}
+                <AvatarFallback
+                  className={cn(
+                    "text-white font-medium text-[10px]",
+                    !isHexColor && r.avatarColor
+                  )}
+                  style={isHexColor ? { backgroundColor: r.avatarColor } : undefined}
+                >
+                  {r.username[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            );
+          })}
         </AvatarGroup>
       </TooltipTrigger>
       <TooltipContent side="left" className="p-2">
