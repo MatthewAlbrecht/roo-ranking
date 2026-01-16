@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import bcrypt from "bcryptjs";
+import { requireAuth, requireAdmin, getAuthenticatedUserId } from "./lib/auth";
 
 const SALT_ROUNDS = 10;
 
@@ -40,12 +41,34 @@ export const login = mutation({
   },
 });
 
-// Get user by ID (for session restoration)
+// Get user by ID (for session restoration) - legacy, use getCurrentUser instead
 export const getUser = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);
     if (!user) return null;
+    return {
+      _id: user._id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+      avatarColor: user.avatarColor,
+      yearsAttended: user.yearsAttended,
+      questionnaire: user.questionnaire,
+      onboardingComplete: user.onboardingComplete,
+    };
+  },
+});
+
+// Get current authenticated user (uses Convex Auth)
+export const getCurrentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthenticatedUserId(ctx);
+    if (!userId) return null;
+
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+
     return {
       _id: user._id,
       username: user.username,
@@ -205,45 +228,37 @@ export const checkUsername = query({
   },
 });
 
-// Update user profile
+// Update user profile (authenticated user only)
 export const updateProfile = mutation({
   args: {
-    userId: v.id("users"),
     avatarColor: v.optional(v.string()),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) {
-      return { success: false, error: "User not found" };
-    }
+    const userId = await requireAuth(ctx);
 
     const updates: Record<string, unknown> = {};
     if (args.avatarColor !== undefined) updates.avatarColor = args.avatarColor;
     if (args.yearsAttended !== undefined) updates.yearsAttended = args.yearsAttended;
     if (args.questionnaire !== undefined) updates.questionnaire = args.questionnaire;
 
-    await ctx.db.patch(args.userId, updates);
+    await ctx.db.patch(userId, updates);
     return { success: true };
   },
 });
 
-// Complete onboarding for existing users
+// Complete onboarding for existing users (authenticated user only)
 export const completeOnboarding = mutation({
   args: {
-    userId: v.id("users"),
     avatarColor: v.string(),
     yearsAttended: v.optional(v.array(v.number())),
     questionnaire: v.optional(questionnaireValidator),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) {
-      return { success: false, error: "User not found" };
-    }
+    const userId = await requireAuth(ctx);
 
-    await ctx.db.patch(args.userId, {
+    await ctx.db.patch(userId, {
       avatarColor: args.avatarColor,
       yearsAttended: args.yearsAttended,
       questionnaire: args.questionnaire,
@@ -254,15 +269,15 @@ export const completeOnboarding = mutation({
   },
 });
 
-// Change password
+// Change password (authenticated user only)
 export const changePassword = mutation({
   args: {
-    userId: v.id("users"),
     currentPassword: v.string(),
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
+    const userId = await requireAuth(ctx);
+    const user = await ctx.db.get(userId);
     if (!user) {
       return { success: false, error: "User not found" };
     }
@@ -280,19 +295,22 @@ export const changePassword = mutation({
 
     // Hash and update
     const hashedPassword = await bcrypt.hash(args.newPassword, SALT_ROUNDS);
-    await ctx.db.patch(args.userId, { password: hashedPassword });
+    await ctx.db.patch(userId, { password: hashedPassword });
 
     return { success: true };
   },
 });
 
-// Reset user password (admin only)
+// Reset user password (admin only - verified server-side)
 export const resetPassword = mutation({
   args: {
     userId: v.id("users"),
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
+    // Verify caller is an admin
+    await requireAdmin(ctx);
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
       return { success: false, error: "User not found" };
@@ -306,13 +324,16 @@ export const resetPassword = mutation({
   },
 });
 
-// Update user avatar color (admin only)
+// Update user avatar color (admin only - verified server-side)
 export const updateUserColor = mutation({
   args: {
     userId: v.id("users"),
     avatarColor: v.string(),
   },
   handler: async (ctx, args) => {
+    // Verify caller is an admin
+    await requireAdmin(ctx);
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
       return { success: false, error: "User not found" };
@@ -323,10 +344,13 @@ export const updateUserColor = mutation({
   },
 });
 
-// Delete user (admin only)
+// Delete user (admin only - verified server-side)
 export const deleteUser = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
+    // Verify caller is an admin
+    await requireAdmin(ctx);
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
       return { success: false, error: "User not found" };

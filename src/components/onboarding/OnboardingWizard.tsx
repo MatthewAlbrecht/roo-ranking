@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../../convex/_generated/api";
-import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StepCredentials } from "./StepCredentials";
 import { StepAvatarColor } from "./StepAvatarColor";
@@ -25,7 +25,7 @@ const STEP_TITLES: Record<Step, string> = {
 
 export function OnboardingWizard() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { signIn } = useAuthActions();
   const register = useMutation(api.users.register);
 
   const [currentStep, setCurrentStep] = useState<Step>("credentials");
@@ -59,6 +59,7 @@ export function OnboardingWizard() {
     setIsSubmitting(true);
 
     try {
+      // First register the user with profile data
       const result = await register({
         username,
         password,
@@ -70,13 +71,13 @@ export function OnboardingWizard() {
       });
 
       if (result.success) {
-        // Log the user in automatically
-        const loginSuccess = await login(username, password);
-        if (loginSuccess) {
+        // Sign in with Convex Auth (use email field for username)
+        try {
+          await signIn("password", { email: username, password, flow: "signIn" });
           toast.success("Welcome to Roo Ranking!");
           router.push("/artists");
-        } else {
-          // Registration worked but login failed - redirect to login
+        } catch {
+          // Registration worked but Convex Auth sign-in failed - redirect to login
           toast.success("Account created! Please log in.");
           router.push("/");
         }
@@ -84,7 +85,7 @@ export function OnboardingWizard() {
         toast.error(result.error || "Failed to create account");
         setIsSubmitting(false);
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
       setIsSubmitting(false);
     }

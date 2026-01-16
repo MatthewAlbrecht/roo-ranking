@@ -79,8 +79,8 @@ export default function CompleteOnboardingPage() {
     setIsSubmitting(true);
 
     try {
+      // userId is now verified server-side via Convex Auth
       const result = await completeOnboarding({
-        userId: user._id,
         avatarColor,
         yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
         questionnaire: includeQuestionnaire && Object.values(questionnaire).some(v => v?.trim())
@@ -95,7 +95,7 @@ export default function CompleteOnboardingPage() {
         toast.error(result.error || "Failed to complete onboarding");
         setIsSubmitting(false);
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
       setIsSubmitting(false);
     }

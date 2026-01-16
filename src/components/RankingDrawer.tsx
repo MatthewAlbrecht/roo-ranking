@@ -25,7 +25,6 @@ type Artist = {
 type RankingDrawerProps = {
   artist: Artist | null;
   currentScore: number | null;
-  userId: Id<"users">;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -33,7 +32,6 @@ type RankingDrawerProps = {
 export function RankingDrawer({
   artist,
   currentScore,
-  userId,
   open,
   onOpenChange,
 }: RankingDrawerProps) {
@@ -43,16 +41,18 @@ export function RankingDrawer({
   const handleRate = useCallback(
     async (score: number) => {
       if (!artist) return;
-      await setRanking({ userId, artistId: artist._id, score });
+      // userId is now verified server-side via Convex Auth
+      await setRanking({ artistId: artist._id, score });
       toast.success(`Rated ${artist.name}: ${score}/10`);
       onOpenChange(false);
     },
-    [artist, userId, setRanking, onOpenChange]
+    [artist, setRanking, onOpenChange]
   );
 
   const handleClear = async () => {
     if (!artist) return;
-    await clearRanking({ userId, artistId: artist._id });
+    // userId is now verified server-side via Convex Auth
+    await clearRanking({ artistId: artist._id });
     toast.success(`Cleared rating for ${artist.name}`);
     onOpenChange(false);
   };

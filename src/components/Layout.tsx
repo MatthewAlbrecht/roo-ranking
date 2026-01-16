@@ -1,13 +1,15 @@
 "use client";
 
 import { useAuth } from "./AuthProvider";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { signOut } = useAuthActions();
   const pathname = usePathname();
 
   if (!user) return <>{children}</>;
@@ -70,7 +72,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {user.username}
             </Link>
-            <Button variant="outline" size="sm" onClick={logout}>
+            <Button variant="outline" size="sm" onClick={() => signOut()}>
               Logout
             </Button>
           </div>

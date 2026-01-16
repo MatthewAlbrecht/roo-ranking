@@ -9,17 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function SignupPage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && isAuthenticated && user) {
       router.push("/artists");
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, isAuthenticated, router]);
 
-  if (isLoading || user) {
+  if (isLoading || (isAuthenticated && user)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-sm">

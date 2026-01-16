@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,26 +23,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { user, isLoading, login } = useAuth();
+  const { signIn } = useAuthActions();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && isAuthenticated && user) {
       router.push("/artists");
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
 
-    const success = await login(username, password);
-
-    if (success) {
+    try {
+      // Use email field for username (Convex Auth convention)
+      await signIn("password", { email: username, password, flow: "signIn" });
       router.push("/artists");
-    } else {
+    } catch {
       setError("Invalid username or password");
       setIsSubmitting(false);
     }

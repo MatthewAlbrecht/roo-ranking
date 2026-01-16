@@ -1,22 +1,17 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuth } from "./lib/auth";
 
 // Set or update a ranking (upsert)
-// Note: This app uses client-side session management. The userId is passed from
-// the authenticated client. In a production app with sensitive data, consider
-// implementing server-side session validation or using Convex Auth.
+// User identity is verified server-side via Convex Auth
 export const setRanking = mutation({
   args: {
-    userId: v.id("users"),
     artistId: v.id("artists"),
     score: v.number(),
   },
   handler: async (ctx, args) => {
-    // Verify the user exists
-    const user = await ctx.db.get(args.userId);
-    if (!user) {
-      return { success: false, error: "User not found" };
-    }
+    // Get authenticated user ID from session (throws if not authenticated)
+    const userId = await requireAuth(ctx);
 
     if (args.score < 1 || args.score > 10) {
       return { success: false, error: "Score must be between 1 and 10" };
@@ -25,7 +20,7 @@ export const setRanking = mutation({
     const existing = await ctx.db
       .query("rankings")
       .withIndex("by_user_artist", (q) =>
-        q.eq("userId", args.userId).eq("artistId", args.artistId)
+        q.eq("userId", userId).eq("artistId", args.artistId)
       )
       .unique();
 
@@ -36,7 +31,7 @@ export const setRanking = mutation({
       });
     } else {
       await ctx.db.insert("rankings", {
-        userId: args.userId,
+        userId,
         artistId: args.artistId,
         score: args.score,
         updatedAt: Date.now(),
@@ -47,22 +42,19 @@ export const setRanking = mutation({
 });
 
 // Clear a ranking
+// User identity is verified server-side via Convex Auth
 export const clearRanking = mutation({
   args: {
-    userId: v.id("users"),
     artistId: v.id("artists"),
   },
   handler: async (ctx, args) => {
-    // Verify the user exists
-    const user = await ctx.db.get(args.userId);
-    if (!user) {
-      return { success: false, error: "User not found" };
-    }
+    // Get authenticated user ID from session (throws if not authenticated)
+    const userId = await requireAuth(ctx);
 
     const existing = await ctx.db
       .query("rankings")
       .withIndex("by_user_artist", (q) =>
-        q.eq("userId", args.userId).eq("artistId", args.artistId)
+        q.eq("userId", userId).eq("artistId", args.artistId)
       )
       .unique();
 

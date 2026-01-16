@@ -69,7 +69,8 @@ export default function SettingsPage() {
   const handleSaveColor = async () => {
     if (!user) return;
     setColorSaving(true);
-    const result = await updateProfile({ userId: user._id, avatarColor });
+    // userId is now verified server-side via Convex Auth
+    const result = await updateProfile({ avatarColor });
     if (result.success) {
       toast.success("Avatar color updated");
     } else {
@@ -81,8 +82,8 @@ export default function SettingsPage() {
   const handleSaveYears = async () => {
     if (!user) return;
     setYearsSaving(true);
+    // userId is now verified server-side via Convex Auth
     const result = await updateProfile({
-      userId: user._id,
       yearsAttended: yearsAttended.length > 0 ? yearsAttended : undefined,
     });
     if (result.success) {
@@ -97,8 +98,8 @@ export default function SettingsPage() {
     if (!user) return;
     setQuestionnaireSaving(true);
     const hasData = Object.values(questionnaire).some((v) => v?.trim());
+    // userId is now verified server-side via Convex Auth
     const result = await updateProfile({
-      userId: user._id,
       questionnaire: hasData ? questionnaire : undefined,
     });
     if (result.success) {
@@ -123,8 +124,8 @@ export default function SettingsPage() {
     }
 
     setPasswordSaving(true);
+    // userId is now verified server-side via Convex Auth
     const result = await changePassword({
-      userId: user._id,
       currentPassword,
       newPassword,
     });

@@ -313,7 +313,6 @@ export default function ArtistsPage() {
           <RankingDrawer
             artist={selectedArtist}
             currentScore={selectedArtist && rankings ? rankings[selectedArtist._id] ?? null : null}
-            userId={user._id}
             open={drawerOpen}
             onOpenChange={setDrawerOpen}
           />
