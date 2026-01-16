@@ -279,7 +279,7 @@ export default function SettingsPage() {
                         onClick={() => handleSelectAvatar(avatar.storageId)}
                         disabled={avatarSaving}
                         className={cn(
-                          "relative rounded-full overflow-hidden transition-all",
+                          "relative rounded-xl overflow-hidden transition-all",
                           "hover:ring-2 hover:ring-primary hover:ring-offset-2",
                           (selectedAvatarId || user?.avatarImageId) === avatar.storageId &&
                             "ring-2 ring-primary ring-offset-2"
@@ -306,7 +306,7 @@ export default function SettingsPage() {
                   <PopoverTrigger>
                     <div
                       className={cn(
-                        "w-16 h-16 rounded-full cursor-pointer transition-all",
+                        "w-16 h-16 rounded-xl cursor-pointer transition-all",
                         "hover:ring-2 hover:ring-primary hover:ring-offset-2",
                         !selectedAvatarId && !user?.avatarImageId && "ring-2 ring-primary ring-offset-2"
                       )}

@@ -126,7 +126,7 @@ export default function AdminUsersPage() {
                     type="button"
                     onClick={() => setSelectedAvatarId(avatar.storageId)}
                     className={cn(
-                      "w-12 h-12 rounded-full overflow-hidden transition-all",
+                      "w-12 h-12 rounded-xl overflow-hidden transition-all",
                       selectedAvatarId === avatar.storageId
                         ? "ring-2 ring-offset-2 ring-foreground"
                         : ""
@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
                     <Popover>
                       <PopoverTrigger>
                         {user.avatarImageUrl ? (
-                          <div className="w-8 h-8 rounded-full overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-foreground transition-all">
+                          <div className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-foreground transition-all">
                             <img
                               src={user.avatarImageUrl}
                               alt={user.username}
@@ -188,7 +188,7 @@ export default function AdminUsersPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-foreground transition-all">
+                          <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-foreground transition-all">
                             {user.username.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -203,7 +203,7 @@ export default function AdminUsersPage() {
                                 type="button"
                                 onClick={() => handleChangeUserAvatar(user._id, avatar.storageId)}
                                 className={cn(
-                                  "w-10 h-10 rounded-full overflow-hidden transition-all",
+                                  "w-10 h-10 rounded-xl overflow-hidden transition-all",
                                   user.avatarImageId === avatar.storageId
                                     ? "ring-2 ring-offset-2 ring-foreground"
                                     : "hover:ring-2 hover:ring-offset-2 hover:ring-muted-foreground"

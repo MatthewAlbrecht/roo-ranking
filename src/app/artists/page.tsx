@@ -145,7 +145,7 @@ export default function ArtistsPage() {
                       key={u._id}
                       onClick={() => handleUserClick(u.username)}
                       className={cn(
-                        "group shrink-0 flex items-center rounded-full transition-all duration-300 ease-out",
+                        "group shrink-0 flex items-center rounded-xl transition-all duration-300 ease-out",
                         "hover:pr-2",
                         !hasImage && !isHexColor && u.avatarColor,
                         u._id === user?._id && "ring-2 ring-primary ring-offset-2"

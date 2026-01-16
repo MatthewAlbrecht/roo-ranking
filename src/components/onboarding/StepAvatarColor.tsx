@@ -60,7 +60,7 @@ export function StepAvatarColor({
               type="button"
               onClick={() => onAvatarChange(avatar.storageId)}
               className={cn(
-                "w-16 h-16 rounded-full overflow-hidden transition-all",
+                "w-16 h-16 rounded-xl overflow-hidden transition-all",
                 selectedAvatarId === avatar.storageId
                   ? "ring-2 ring-offset-2 ring-primary"
                   : "hover:ring-2 hover:ring-offset-2 hover:ring-muted-foreground"

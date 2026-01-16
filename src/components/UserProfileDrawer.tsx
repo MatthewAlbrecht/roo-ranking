@@ -119,7 +119,7 @@ export function UserProfileDrawer({
             </>
           ) : (
             <>
-              <Skeleton className="w-16 h-16 rounded-full mx-auto mb-2" />
+              <Skeleton className="w-16 h-16 rounded-xl mx-auto mb-2" />
               <Skeleton className="h-6 w-32 mx-auto" />
             </>
           )}

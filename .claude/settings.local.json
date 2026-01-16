@@ -23,7 +23,8 @@
       "Bash(npx convex:*)",
       "WebFetch(domain:github.com)",
       "Bash(pnpm remove:*)",
-      "Bash(nvm list:*)"
+      "Bash(nvm list:*)",
+      "Bash(grep:*)"
     ]
   }
 }

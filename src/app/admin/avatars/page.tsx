@@ -197,7 +197,7 @@ export default function AdminAvatarsPage() {
               <img
                 src={preview}
                 alt="Preview"
-                className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                className="w-24 h-24 rounded-xl object-cover border-2 border-border"
               />
             </div>
           )}
@@ -240,10 +240,10 @@ export default function AdminAvatarsPage() {
                       <img
                         src={avatar.url}
                         alt={avatar.name}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                        className="w-16 h-16 rounded-xl object-cover border-2 border-border"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center">
                         ?
                       </div>
                     )}
@@ -256,7 +256,7 @@ export default function AdminAvatarsPage() {
                   <AlertDialog>
                     <AlertDialogTrigger
                       render={
-                        <button className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-xl text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                           x
                         </button>
                       }
