@@ -60,15 +60,35 @@ export default function ArtistsPage() {
   const ratedCount = rankings ? Object.keys(rankings).length : 0;
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "bg-green-500 text-white";
-    if (score >= 5) return "bg-yellow-500 text-white";
-    return "bg-red-500 text-white";
+    const colors: Record<number, string> = {
+      10: "bg-purple-500 text-white",
+      9: "bg-blue-500 text-white",
+      8: "bg-cyan-500 text-white",
+      7: "bg-teal-500 text-white",
+      6: "bg-green-500 text-white",
+      5: "bg-lime-500 text-white",
+      4: "bg-yellow-500 text-white",
+      3: "bg-amber-500 text-white",
+      2: "bg-orange-500 text-white",
+      1: "bg-red-500 text-white",
+    };
+    return colors[score] ?? "bg-gray-500 text-white";
   };
 
   const getScoreTextColor = (score: number) => {
-    if (score >= 8) return "text-green-600";
-    if (score >= 5) return "text-yellow-600";
-    return "text-red-600";
+    const colors: Record<number, string> = {
+      10: "text-purple-600",
+      9: "text-blue-600",
+      8: "text-cyan-600",
+      7: "text-teal-600",
+      6: "text-green-600",
+      5: "text-lime-600",
+      4: "text-yellow-600",
+      3: "text-amber-600",
+      2: "text-orange-600",
+      1: "text-red-600",
+    };
+    return colors[score] ?? "text-gray-600";
   };
 
   // For "My Ranking" tab - split into ranked and unranked

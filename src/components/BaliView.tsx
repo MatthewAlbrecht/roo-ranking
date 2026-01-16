@@ -38,9 +38,19 @@ export function BaliView({ year, rankings, otherRankings, userMap, onArtistClick
   const artistMap = new Map(artists?.map((a) => [a._id, a]) ?? []);
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "bg-green-500 text-white";
-    if (score >= 5) return "bg-yellow-500 text-white";
-    return "bg-red-500 text-white";
+    const colors: Record<number, string> = {
+      10: "bg-purple-500 text-white",
+      9: "bg-blue-500 text-white",
+      8: "bg-cyan-500 text-white",
+      7: "bg-teal-500 text-white",
+      6: "bg-green-500 text-white",
+      5: "bg-lime-500 text-white",
+      4: "bg-yellow-500 text-white",
+      3: "bg-amber-500 text-white",
+      2: "bg-orange-500 text-white",
+      1: "bg-red-500 text-white",
+    };
+    return colors[score] ?? "bg-gray-500 text-white";
   };
 
   const renderArtistList = (artistIds: Id<"artists">[]) => {

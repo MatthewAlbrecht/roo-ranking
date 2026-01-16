@@ -27,9 +27,20 @@ export default function AggregatePage() {
     .sort((a, b) => a.name.localeCompare(b.name)) ?? [];
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "text-green-600";
-    if (score >= 5) return "text-yellow-600";
-    return "text-red-600";
+    const rounded = Math.round(score);
+    const colors: Record<number, string> = {
+      10: "text-purple-600",
+      9: "text-blue-600",
+      8: "text-cyan-600",
+      7: "text-teal-600",
+      6: "text-green-600",
+      5: "text-lime-600",
+      4: "text-yellow-600",
+      3: "text-amber-600",
+      2: "text-orange-600",
+      1: "text-red-600",
+    };
+    return colors[rounded] ?? "text-gray-600";
   };
 
   return (
