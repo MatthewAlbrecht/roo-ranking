@@ -28,7 +28,11 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
-      router.push("/artists");
+      if (user.onboardingComplete) {
+        router.push("/artists");
+      } else {
+        router.push("/complete-onboarding");
+      }
     }
   }, [user, isLoading, isAuthenticated, router]);
 
