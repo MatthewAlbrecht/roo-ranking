@@ -28,7 +28,7 @@ export const login = mutation({
       return { success: false, error: "Invalid username or password" };
     }
 
-    const isValid = await bcrypt.compare(args.password, user.password);
+    const isValid = bcrypt.compareSync(args.password, user.password);
     if (!isValid) {
       return { success: false, error: "Invalid username or password" };
     }

@@ -25,7 +25,7 @@ dependencies:
     version: 2.1.1
   convex:
     specifier: ^1.31.4
-    version: 1.31.4(react@19.2.3)
+    version: 1.31.5(react@19.2.3)
   next:
     specifier: 16.1.2
     version: 16.1.2(@babel/core@7.28.6)(react-dom@19.2.3)(react@19.2.3)
@@ -43,7 +43,7 @@ dependencies:
     version: 19.2.3(react@19.2.3)
   shadcn:
     specifier: ^3.6.3
-    version: 3.6.3(@types/node@20.19.30)(hono@4.11.4)(typescript@5.9.3)
+    version: 3.7.0(@types/node@20.19.30)(hono@4.11.4)(typescript@5.9.3)
   sonner:
     specifier: ^2.0.7
     version: 2.0.7(react-dom@19.2.3)(react@19.2.3)
@@ -2395,8 +2395,8 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
-  /baseline-browser-mapping@2.9.14:
-    resolution: {integrity: sha512-B0xUquLkiGLgHhpPBqvl7GWegWBUNuujQ6kXd/r1U38ElPT6Ok8KZ8e+FpUGEc2ZoRQUzq/aUnaKFc/svWUGSg==}
+  /baseline-browser-mapping@2.9.15:
+    resolution: {integrity: sha512-kX8h7K2srmDyYnXRIppo4AH/wYgzWVCs+eKr3RusRSQ5PvRYoEFmR/I0PbdTjKFAoKqp5+kbxnNTFO9jOfSVJg==}
     hasBin: true
 
   /bcryptjs@3.0.3:
@@ -2444,7 +2444,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      baseline-browser-mapping: 2.9.14
+      baseline-browser-mapping: 2.9.15
       caniuse-lite: 1.0.30001764
       electron-to-chromium: 1.5.267
       node-releases: 2.0.27
@@ -2587,8 +2587,8 @@ packages:
   /convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  /convex@1.31.4(react@19.2.3):
-    resolution: {integrity: sha512-iDm283Gb/CFRb30cvhH6Z9qlYof6dhtin415FarKUKB3K7gumO0rn8snY0CTvUrThV3UnCtttbuL/1oY7LscyA==}
+  /convex@1.31.5(react@19.2.3):
+    resolution: {integrity: sha512-E1IuJKFwMCHDToNGukBPs6c7RFaarR3t8chLF9n98TM5/Tgmj8lM6l7sKM1aJ3VwqGaB4wbeUAPY8osbCOXBhQ==}
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
@@ -4599,7 +4599,7 @@ packages:
     dependencies:
       '@next/env': 16.1.2
       '@swc/helpers': 0.5.15
-      baseline-browser-mapping: 2.9.14
+      baseline-browser-mapping: 2.9.15
       caniuse-lite: 1.0.30001764
       postcss: 8.4.31
       react: 19.2.3
@@ -5305,8 +5305,8 @@ packages:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
     dev: false
 
-  /shadcn@3.6.3(@types/node@20.19.30)(hono@4.11.4)(typescript@5.9.3):
-    resolution: {integrity: sha512-j2xlma8PtYLbhvA612/MPOrDYsEp0DIiU1gC0BEbSBqWR6mBgwiKpA21Juq9tSswgUeIfxoUzZX8c7YwcL3ncA==}
+  /shadcn@3.7.0(@types/node@20.19.30)(hono@4.11.4)(typescript@5.9.3):
+    resolution: {integrity: sha512-zOXNAIFclguSYmmoibyXyKiYA6qjEJtXDSvloAMziSREW9Q0R/dLqBUYdb81lOejmZkDYuZApGabbMLH7G8qvQ==}
     hasBin: true
     dependencies:
       '@antfu/ni': 25.0.0
