@@ -11,11 +11,22 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
+type Questionnaire = {
+  favoriteYear?: string;
+  memorableSet?: string;
+  worstSet?: string;
+  favoriteVendor?: string;
+  campEssential?: string;
+};
+
 type User = {
   _id: Id<"users">;
   username: string;
   isAdmin: boolean;
   avatarColor: string;
+  yearsAttended?: number[];
+  questionnaire?: Questionnaire;
+  onboardingComplete?: boolean;
 } | null;
 
 type AuthContextType = {

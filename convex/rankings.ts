@@ -2,6 +2,9 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // Set or update a ranking (upsert)
+// Note: This app uses client-side session management. The userId is passed from
+// the authenticated client. In a production app with sensitive data, consider
+// implementing server-side session validation or using Convex Auth.
 export const setRanking = mutation({
   args: {
     userId: v.id("users"),
@@ -9,6 +12,12 @@ export const setRanking = mutation({
     score: v.number(),
   },
   handler: async (ctx, args) => {
+    // Verify the user exists
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
     if (args.score < 1 || args.score > 10) {
       return { success: false, error: "Score must be between 1 and 10" };
     }
@@ -44,6 +53,12 @@ export const clearRanking = mutation({
     artistId: v.id("artists"),
   },
   handler: async (ctx, args) => {
+    // Verify the user exists
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
     const existing = await ctx.db
       .query("rankings")
       .withIndex("by_user_artist", (q) =>

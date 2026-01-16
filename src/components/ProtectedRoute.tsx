@@ -15,6 +15,13 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, router]);
 
+  // Redirect to complete onboarding if not completed
+  useEffect(() => {
+    if (!isLoading && user && !user.onboardingComplete) {
+      router.push("/complete-onboarding");
+    }
+  }, [user, isLoading, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -27,6 +34,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return null;
+
+  // Don't render children until onboarding is complete
+  if (!user.onboardingComplete) return null;
 
   return <>{children}</>;
 }

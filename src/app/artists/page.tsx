@@ -7,9 +7,11 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { useAuth } from "@/components/AuthProvider";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useRouter } from "next/navigation";
 import { RankingDrawer } from "@/components/RankingDrawer";
 import { BaliView } from "@/components/BaliView";
 import { OtherRankings } from "@/components/OtherRankings";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +28,7 @@ type Artist = {
 
 export default function ArtistsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "bali" | "my">("all");
@@ -49,8 +52,16 @@ export default function ArtistsPage() {
       : "skip"
   );
   const allUsers = useQuery(api.users.getAllUsers);
+  const allUsersWithProfiles = useQuery(api.users.getAllUsersWithProfiles);
 
   const userMap = new Map(allUsers?.map((u) => [u._id.toString(), u]) ?? []);
+
+  // Get up to 30 users for the avatar row
+  const displayUsers = (allUsersWithProfiles ?? []).slice(0, 30);
+
+  const handleUserClick = (username: string) => {
+    router.push(`/user/${username}`);
+  };
 
   // Filter artists for "All" tab
   const filteredArtists = artists
@@ -121,6 +132,38 @@ export default function ArtistsPage() {
                 )}
               </div>
             </div>
+
+            {/* User Avatars Row */}
+            {displayUsers.length > 0 && (
+              <div className="flex gap-3 mt-3 overflow-x-auto py-2 -mx-2 px-2">
+                {displayUsers.map((u) => {
+                  const isHexColor = u.avatarColor?.startsWith("#");
+                  return (
+                    <button
+                      key={u._id}
+                      onClick={() => handleUserClick(u.username)}
+                      className={cn(
+                        "shrink-0 transition-all hover:scale-110",
+                        u._id === user?._id && "ring-2 ring-primary ring-offset-2 rounded-full"
+                      )}
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback
+                          className={cn(
+                            "text-sm font-medium text-white",
+                            !isHexColor && u.avatarColor
+                          )}
+                          style={isHexColor ? { backgroundColor: u.avatarColor } : undefined}
+                        >
+                          {u.username.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="relative mt-3">
               <Input
                 value={search}

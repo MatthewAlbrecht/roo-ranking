@@ -59,9 +59,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+            <Link
+              href="/settings"
+              className={cn(
+                "text-sm transition-colors hover:text-foreground",
+                pathname === "/settings"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              )}
+            >
               {user.username}
-            </span>
+            </Link>
             <Button variant="outline" size="sm" onClick={logout}>
               Logout
             </Button>

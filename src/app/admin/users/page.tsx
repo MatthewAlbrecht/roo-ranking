@@ -46,10 +46,15 @@ export default function AdminUsersPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
 
+  const [resetPasswordUserId, setResetPasswordUserId] = useState<Id<"users"> | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+
   const users = useQuery(api.users.getAllUsers);
   const createUser = useMutation(api.users.createUser);
   const updateUserColor = useMutation(api.users.updateUserColor);
   const deleteUser = useMutation(api.users.deleteUser);
+  const resetPassword = useMutation(api.users.resetPassword);
 
   const handleCreateUser = async () => {
     if (!username.trim() || !password.trim()) return;
@@ -75,6 +80,15 @@ export default function AdminUsersPage() {
 
   const handleDeleteUser = async (userId: Id<"users">) => {
     await deleteUser({ userId });
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetPasswordUserId || !newPassword.trim()) return;
+    setIsResetting(true);
+    await resetPassword({ userId: resetPasswordUserId, newPassword: newPassword.trim() });
+    setResetPasswordUserId(null);
+    setNewPassword("");
+    setIsResetting(false);
   };
 
   return (
@@ -192,31 +206,42 @@ export default function AdminUsersPage() {
                     </div>
                   </div>
 
-                  {user._id !== currentUser?._id && !user.isAdmin && (
-                    <AlertDialog>
-                      <AlertDialogTrigger
-                        render={<Button variant="ghost" size="sm" />}
+                  {user._id !== currentUser?._id && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setResetPasswordUserId(user._id)}
                       >
-                        Delete
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete User</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete &quot;{user.username}
-                            &quot;? This will also delete all their rankings.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteUser(user._id)}
+                        Reset PW
+                      </Button>
+                      {!user.isAdmin && (
+                        <AlertDialog>
+                          <AlertDialogTrigger
+                            render={<Button variant="ghost" size="sm" />}
                           >
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete User</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete &quot;{user.username}
+                                &quot;? This will also delete all their rankings.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteUser(user._id)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
@@ -224,6 +249,34 @@ export default function AdminUsersPage() {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Reset Password Dialog */}
+      <AlertDialog open={resetPasswordUserId !== null} onOpenChange={(open) => !open && setResetPasswordUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter a new password for{" "}
+              {users?.find((u) => u._id === resetPasswordUserId)?.username || "this user"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            type="password"
+            placeholder="New password (min 6 characters)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNewPassword("")}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetPassword}
+              disabled={isResetting || newPassword.length < 6}
+            >
+              {isResetting ? "Resetting..." : "Reset Password"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

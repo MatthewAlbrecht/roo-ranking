@@ -8,6 +8,17 @@ export default defineSchema({
     isAdmin: v.boolean(),
     avatarColor: v.string(),
     createdAt: v.number(),
+    yearsAttended: v.optional(v.array(v.number())),
+    questionnaire: v.optional(
+      v.object({
+        favoriteYear: v.optional(v.string()),
+        memorableSet: v.optional(v.string()),
+        worstSet: v.optional(v.string()),
+        favoriteVendor: v.optional(v.string()),
+        campEssential: v.optional(v.string()),
+      })
+    ),
+    onboardingComplete: v.optional(v.boolean()),
   }).index("by_username", ["username"]),
 
   artists: defineTable({

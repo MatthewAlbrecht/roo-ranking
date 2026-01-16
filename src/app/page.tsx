@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,6 +103,12 @@ export default function LoginPage() {
               {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="text-primary underline-offset-4 hover:underline">
+              Sign up
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>

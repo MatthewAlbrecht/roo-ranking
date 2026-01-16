@@ -14,6 +14,9 @@ dependencies:
   '@hugeicons/react':
     specifier: ^1.1.4
     version: 1.1.4(react@19.2.3)
+  bcryptjs:
+    specifier: ^3.0.3
+    version: 3.0.3
   class-variance-authority:
     specifier: ^0.7.1
     version: 0.7.1
@@ -32,6 +35,9 @@ dependencies:
   react:
     specifier: 19.2.3
     version: 19.2.3
+  react-colorful:
+    specifier: ^5.6.1
+    version: 5.6.1(react-dom@19.2.3)(react@19.2.3)
   react-dom:
     specifier: 19.2.3
     version: 19.2.3(react@19.2.3)
@@ -55,6 +61,9 @@ devDependencies:
   '@tailwindcss/postcss':
     specifier: ^4
     version: 4.1.18
+  '@types/bcryptjs':
+    specifier: ^3.0.0
+    version: 3.0.0
   '@types/node':
     specifier: ^20
     version: 20.19.30
@@ -1828,6 +1837,13 @@ packages:
     dev: true
     optional: true
 
+  /@types/bcryptjs@3.0.0:
+    resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
+    deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
+    dependencies:
+      bcryptjs: 3.0.3
+    dev: true
+
   /@types/estree@1.0.8:
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
     dev: true
@@ -2381,6 +2397,10 @@ packages:
 
   /baseline-browser-mapping@2.9.14:
     resolution: {integrity: sha512-B0xUquLkiGLgHhpPBqvl7GWegWBUNuujQ6kXd/r1U38ElPT6Ok8KZ8e+FpUGEc2ZoRQUzq/aUnaKFc/svWUGSg==}
+    hasBin: true
+
+  /bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
   /body-parser@2.2.2:
@@ -4976,6 +4996,16 @@ packages:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       unpipe: 1.0.0
+    dev: false
+
+  /react-colorful@5.6.1(react-dom@19.2.3)(react@19.2.3):
+    resolution: {integrity: sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
     dev: false
 
   /react-dom@19.2.3(react@19.2.3):

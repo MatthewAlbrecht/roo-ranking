@@ -25,7 +25,7 @@ export function OtherRankings({ rankings, maxTooltipItems = 10 }: OtherRankingsP
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger render={<span />}>
         <AvatarGroup>
           {rankings.slice(0, 3).map((r) => (
             <Avatar key={r.userId} size="sm">
