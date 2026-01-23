@@ -279,13 +279,15 @@ export const completeOnboarding = mutation({
   handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
     const userId = await requireSession(ctx, args.token);
 
-    await ctx.db.patch(userId, {
+    const updates: Record<string, unknown> = {
       avatarColor: args.avatarColor,
-      avatarImageId: args.avatarImageId,
-      yearsAttended: args.yearsAttended,
-      questionnaire: args.questionnaire,
       onboardingComplete: true,
-    });
+    };
+    if (args.avatarImageId !== undefined) updates.avatarImageId = args.avatarImageId;
+    if (args.yearsAttended !== undefined) updates.yearsAttended = args.yearsAttended;
+    if (args.questionnaire !== undefined) updates.questionnaire = args.questionnaire;
+
+    await ctx.db.patch(userId, updates);
 
     return { success: true };
   },
