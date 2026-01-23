@@ -60,12 +60,19 @@ export function BaliView({ year, rankings, otherRankings, userMap, onArtistClick
       .filter((a): a is Artist => a !== undefined)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    const ratedCount = groupArtists.filter((a) => rankings[a._id] !== undefined).length;
+    const ratedArtists = groupArtists.filter((a) => rankings[a._id] !== undefined);
+    const ratedCount = ratedArtists.length;
+    const avgRating = ratedCount > 0
+      ? ratedArtists.reduce((sum, a) => sum + rankings[a._id], 0) / ratedCount
+      : null;
 
     return (
       <>
         <p className="text-sm text-muted-foreground mb-3">
           {ratedCount}/{groupArtists.length} rated
+          {avgRating !== null && (
+            <span className="ml-2">· avg {avgRating.toFixed(1)}</span>
+          )}
         </p>
         <div className="space-y-1">
           {groupArtists.map((artist) => {
